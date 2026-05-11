@@ -24,8 +24,6 @@
         .status.error { background:#e74c3c; color:#fff; }
         .status.info { background:#3498db; color:#fff; }
         .status.show { display:block; }
-        details { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; }
-        summary { font-weight: bold; color: #2ecc71; }
     </style>
 </head>
 <body>
@@ -64,8 +62,8 @@
 </div>
 
 <script>
-    // URL DE TU GOOGLE APPS SCRIPT
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyH3nD1MRf9AF6gOW_w1N_RMZgojzKUPPrvVMbWiNpThr0fCoEUUqgWKXtQUB1pf48WUA/exec";
+    // URL DE TU GOOGLE APPS SCRIPT ACTUALIZADA
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
     const criteriosLista = [
@@ -81,18 +79,15 @@
     let puntuaciones = {};
     let catas = JSON.parse(localStorage.getItem("catas")) || [];
 
-    const statusDiv = document.getElementById("status");
-
-    function mostrarStatus(mensaje, tipo) {
-        statusDiv.textContent = mensaje;
-        statusDiv.className = "status show " + tipo;
-    }
-
     function iniciar() {
-        if(!document.getElementById("nombre").value || !document.getElementById("variedad").value) {
-            alert("Rellena nombre y variedad.");
+        const nom = document.getElementById("nombre").value;
+        const varid = document.getElementById("variedad").value;
+        
+        if(!nom || !varid) {
+            alert("Por favor, introduce tu nombre y la variedad.");
             return;
         }
+        
         document.getElementById("fase1").style.display = "none";
         document.getElementById("fase2").style.display = "block";
         
@@ -110,6 +105,7 @@
             for(let i=1; i<=10; i++) {
                 let b = document.createElement("button");
                 b.textContent = i;
+                b.type = "button";
                 b.onclick = () => {
                     [...rating.children].forEach(x => x.classList.remove("active"));
                     b.classList.add("active");
@@ -133,51 +129,57 @@
 
     function guardar() {
         if(Object.keys(puntuaciones).length < criteriosLista.length) {
-            alert("Por favor, puntúa todos los criterios.");
+            alert("Por favor, puntúa todos los criterios antes de guardar.");
             return;
         }
 
         const btn = document.getElementById("btnGuardar");
         btn.disabled = true;
-        btn.innerText = "Enviando...";
+        btn.innerText = "Enviando datos...";
 
+        // Preparamos el objeto plano para que coincida con las columnas del Excel
         const nuevaCata = {
-            fecha: new Date().toLocaleString(),
+            fecha: new Date().toLocaleString('es-ES'),
             nombre: document.getElementById("nombre").value,
             variedad: document.getElementById("variedad").value,
             precio: document.getElementById("precio").value || "0",
             nota: calcular(),
             comentarios: document.getElementById("comentarios").value,
-            puntos: puntuaciones
+            ...puntuaciones // Esparce Aspecto, Olor, etc. como propiedades individuales
         };
 
-        // 1. Local
+        // 1. Guardar en Historial Local
         catas.unshift(nuevaCata);
         localStorage.setItem("catas", JSON.stringify(catas));
         renderHistorial();
 
-        // 2. Google Drive
-        enviarAGoogle(nuevaCata);
-    }
-
-    function enviarAGoogle(datos) {
-        mostrarStatus("⏳ Guardando en la nube...", "info");
+        // 2. Enviar a Google Drive
+        mostrarStatus("⏳ Conectando con Google Sheets...", "info");
 
         fetch(GOOGLE_SHEETS_URL, {
             method: "POST",
-            mode: "no-cors",
+            mode: "no-cors", // Necesario para Google Apps Script
             headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(datos)
+            body: JSON.stringify(nuevaCata)
         })
         .then(() => {
-            mostrarStatus("✅ ¡Guardado con éxito en Drive!", "success");
-            setTimeout(resetApp, 3000);
+            mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
+            setTimeout(() => {
+                location.reload();
+            }, 2500);
         })
         .catch(err => {
             console.error(err);
-            mostrarStatus("❌ Error de red, guardado solo en el móvil", "error");
-            document.getElementById("btnGuardar").disabled = false;
+            mostrarStatus("❌ Error al enviar. Se guardó localmente.", "error");
+            btn.disabled = false;
+            btn.innerText = "Reintentar Guardar";
         });
+    }
+
+    function mostrarStatus(mensaje, tipo) {
+        const statusDiv = document.getElementById("status");
+        statusDiv.textContent = mensaje;
+        statusDiv.className = "status show " + tipo;
     }
 
     function renderHistorial() {
@@ -192,14 +194,10 @@
                     <strong>${c.variedad}</strong>
                     <span class="nota-destacada" style="font-size:1.1em">${c.nota}</span>
                 </div>
-                <div class="small">${c.nombre} | ${c.fecha}</div>
+                <div class="small">${c.fecha}</div>
             `;
             historialDiv.appendChild(item);
         });
-    }
-
-    function resetApp() {
-        location.reload(); // Recarga para limpiar todo de forma segura
     }
 
     renderHistorial();
