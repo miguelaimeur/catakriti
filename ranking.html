@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Cata PRO - Resultados</title>
+    <title>Ranking Cata PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body class="bg-zinc-950 text-slate-200 min-h-screen p-4 md:p-10 font-sans">
 
@@ -19,71 +18,75 @@
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                <p class="text-xs font-mono text-zinc-400 uppercase tracking-widest">En tiempo real</p>
+                <p class="text-xs font-mono text-zinc-400 uppercase tracking-widest text-white">Actualizando en vivo</p>
             </div>
         </header>
 
         <div id="ranking-container" class="space-y-4">
-            <!-- Cargando -->
-            <div class="text-center py-20 text-zinc-600 animate-pulse">
-                Sincronizando con Google Sheets...
-            </div>
+            <div class="text-center py-20 text-zinc-600 animate-pulse">Cargando resultados de la cata...</div>
         </div>
     </div>
 
     <script>
-        // Configuración basada en tu hoja
+        // Configuración específica de tu hoja
         const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
-        
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(fetchRanking);
+        const SHEET_NAME = 'Respuestas de formulario 1'; // Cambia esto si cambiaste el nombre de la pestaña
 
-        function fetchRanking() {
-            // Seleccionamos Variedad (C) y Nota (E), agrupando por Variedad y calculando la media
+        async function fetchRanking() {
+            // Consulta: Columna C (Variedad), Columna E (Nota). Agrupamos por C y hacemos la media de E.
             const query = encodeURIComponent("SELECT C, AVG(E) WHERE C IS NOT NULL GROUP BY C ORDER BY AVG(E) DESC");
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq=${query}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq=${query}&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-            fetch(url)
-                .then(res => res.text())
-                .then(rep => {
-                    const data = JSON.parse(rep.substr(47).slice(0, -2));
-                    renderUI(data.table.rows);
-                })
-                .catch(err => console.error("Error:", err));
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // Limpiamos el JSON que devuelve Google
+                const jsonData = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+                renderUI(jsonData.table.rows);
+            } catch (err) {
+                console.error("Error cargando datos:", err);
+                document.getElementById('ranking-container').innerHTML = `<div class="text-center text-red-500">Error al conectar con la hoja. Revisa que el acceso sea público.</div>`;
+            }
         }
 
         function renderUI(rows) {
             const container = document.getElementById('ranking-container');
             container.innerHTML = '';
 
+            if (rows.length === 0) {
+                container.innerHTML = '<div class="text-center text-zinc-500">Aún no hay datos registrados.</div>';
+                return;
+            }
+
             rows.forEach((row, index) => {
-                const name = row.c[0].v;
-                const score = row.c[1].v.toFixed(2);
+                const name = row.c[0] ? row.c[0].v : "Sin nombre";
+                const score = row.c[1] ? row.c[1].v : 0;
                 const pos = index + 1;
 
                 const card = document.createElement('div');
                 card.className = `flex items-center justify-between p-5 rounded-2xl border transition-all duration-500 ${
-                    pos === 1 ? 'bg-gradient-to-r from-yellow-900/20 to-zinc-900 border-yellow-500/50 scale-105 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'bg-zinc-900 border-zinc-800'
+                    pos === 1 ? 'bg-gradient-to-r from-yellow-900/30 to-zinc-900 border-yellow-500/50 scale-105 shadow-xl' : 'bg-zinc-900 border-zinc-800'
                 }`;
 
                 card.innerHTML = `
                     <div class="flex items-center gap-5">
                         <div class="flex items-center justify-center w-10 h-10 rounded-full font-black ${
-                            pos === 1 ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'
+                            pos === 1 ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-zinc-800 text-zinc-400'
                         }">
                             ${pos}
                         </div>
                         <div>
                             <h3 class="text-lg font-bold text-white uppercase tracking-tight">${name}</h3>
-                            <p class="text-xs text-zinc-500 font-medium italic">Variedad en cata</p>
+                            <p class="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">Variedad</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-2xl font-mono font-bold ${pos === 1 ? 'text-yellow-500' : 'text-zinc-300'}">
-                            ${score}
+                        <span class="text-2xl font-mono font-bold ${pos === 1 ? 'text-yellow-400' : 'text-zinc-300'}">
+                            ${score.toFixed(2)}
                         </span>
-                        <div class="w-24 h-1.5 bg-zinc-800 rounded-full mt-2 overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-orange-600 to-yellow-400" style="width: ${score * 10}%"></div>
+                        <div class="w-24 h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-yellow-600 to-yellow-300" style="width: ${score * 10}%"></div>
                         </div>
                     </div>
                 `;
@@ -91,8 +94,10 @@
             });
         }
 
-        // Refrescar cada 30 segundos
-        setInterval(fetchRanking, 30000);
+        // Ejecutar carga inicial
+        fetchRanking();
+        // Refrescar cada 20 segundos para que sea "tiempo real"
+        setInterval(fetchRanking, 20000);
     </script>
 </body>
 </html>
