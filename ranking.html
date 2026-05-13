@@ -3,126 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Cata PRO</title>
+    <title>Ranking Cata PRO - Directo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-950 text-slate-200 min-h-screen p-4 md:p-10 font-sans">
+<body class="bg-zinc-950 text-slate-200 min-h-screen p-4 md:p-10">
 
     <div class="max-w-3xl mx-auto">
         <header class="text-center mb-12">
-            <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 italic uppercase tracking-tighter">
+            <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 italic uppercase">
                 Ranking Cata PRO
             </h1>
-            <div id="status-badge" class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-zinc-800 rounded-full border border-zinc-700">
-                <span class="relative flex h-2 w-2">
-                    <span id="ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span id="dot" class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <p id="status-text" class="text-xs font-mono text-zinc-400 uppercase tracking-widest">Sincronizando...</p>
-            </div>
+            <p id="status" class="mt-4 text-xs font-mono text-zinc-500 uppercase tracking-widest text-white">Sincronizando con Google Sheets...</p>
         </header>
 
         <div id="ranking-container" class="space-y-4">
-            <div class="text-center py-20 text-zinc-600 animate-pulse font-mono uppercase tracking-widest">
-                Esperando datos de la hoja...
-            </div>
+            <!-- Los datos aparecerán aquí -->
         </div>
     </div>
 
     <script>
         // CONFIGURACIÓN
         const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
-        // Usamos la GID 0 o el nombre de la pestaña. Si es la primera pestaña, '0' suele ser infalible.
-        const GID = '0'; 
+        // Exportamos como CSV para saltar bloqueos de la API de Google
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
         async function fetchRanking() {
-            // Consulta SQL: C es variedad, E es la puntuación.
-            const query = encodeURIComponent("SELECT C, AVG(E) WHERE C IS NOT NULL GROUP BY C ORDER BY AVG(E) DESC");
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq=${query}&gid=${GID}`;
-
             try {
-                const response = await fetch(url);
-                const text = await response.text();
+                const response = await fetch(URL);
+                const csvText = await response.text();
                 
-                // Google devuelve un string que empieza con "google.visualization.Query.setResponse(...)"
-                // Necesitamos extraer solo el JSON de adentro.
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                const jsonString = text.substring(jsonStart, jsonEnd);
+                // Convertir CSV a Array de Objetos
+                const rows = csvText.split('\n').map(row => row.split(','));
                 
-                const data = JSON.parse(jsonString);
-                
-                if (data.status === 'error') {
-                    throw new Error(data.errors[0].detailed_message);
+                // Filtrar y procesar datos (Columna C: Variedad [índice 2], Columna E: Nota [índice 4])
+                // Empezamos en i=1 para saltar la cabecera
+                const stats = {};
+
+                for (let i = 1; i < rows.length; i++) {
+                    const variedad = rows[i][2]?.replace(/"/g, '').trim(); // Columna C
+                    const nota = parseFloat(rows[i][4]); // Columna E
+
+                    if (variedad && !isNaN(nota)) {
+                        if (!stats[variedad]) {
+                            stats[variedad] = { total: 0, count: 0 };
+                        }
+                        stats[variedad].total += nota;
+                        stats[variedad].count += 1;
+                    }
                 }
 
-                renderUI(data.table.rows);
-                updateStatus("En línea", "bg-green-500");
+                // Calcular promedios y ordenar
+                const ranking = Object.keys(stats).map(name => ({
+                    name,
+                    avg: stats[name].total / stats[name].count
+                })).sort((a, b) => b.avg - a.avg);
+
+                renderUI(ranking);
+                document.getElementById('status').innerText = "Actualizado: " + new Date().toLocaleTimeString();
             } catch (err) {
-                console.error("Error detallado:", err);
-                updateStatus("Error de conexión", "bg-red-500");
-                document.getElementById('ranking-container').innerHTML = `
-                    <div class="bg-red-900/20 border border-red-500/50 p-6 rounded-2xl text-center">
-                        <p class="text-red-400 font-bold">Error al leer la hoja de cálculo</p>
-                        <p class="text-xs text-red-300/60 mt-2 font-mono">${err.message}</p>
-                        <p class="text-[10px] text-zinc-500 mt-4 uppercase">Asegúrate de que la hoja está compartida como "Cualquier persona con el enlace puede leer"</p>
-                    </div>`;
+                console.error(err);
+                document.getElementById('status').innerText = "Error de conexión";
             }
         }
 
-        function updateStatus(msg, colorClass) {
-            document.getElementById('status-text').innerText = msg;
-            document.getElementById('dot').className = `relative inline-flex rounded-full h-2 w-2 ${colorClass}`;
-            document.getElementById('ping').className = `animate-ping absolute inline-flex h-full w-full rounded-full ${colorClass} opacity-75`;
-        }
-
-        function renderUI(rows) {
+        function renderUI(data) {
             const container = document.getElementById('ranking-container');
             container.innerHTML = '';
 
-            if (!rows || rows.length === 0) {
-                container.innerHTML = '<div class="text-center text-zinc-500 py-10 italic">No hay datos en las columnas C y E todavía.</div>';
-                return;
-            }
-
-            rows.forEach((row, index) => {
-                const name = row.c[0] ? row.c[0].v : "Sin identificar";
-                const score = row.c[1] ? row.c[1].v : 0;
+            data.forEach((item, index) => {
                 const pos = index + 1;
-
                 const card = document.createElement('div');
-                card.className = `flex items-center justify-between p-5 rounded-2xl border transition-all duration-700 ${
-                    pos === 1 ? 'bg-gradient-to-r from-yellow-900/30 to-zinc-900 border-yellow-500/50 scale-105 shadow-[0_0_30px_rgba(234,179,8,0.15)]' : 'bg-zinc-900/50 border-zinc-800'
+                card.className = `flex items-center justify-between p-5 rounded-2xl border transition-all ${
+                    pos === 1 ? 'bg-zinc-900 border-yellow-500/50 scale-105 shadow-lg' : 'bg-zinc-900/40 border-zinc-800'
                 }`;
 
                 card.innerHTML = `
                     <div class="flex items-center gap-5">
-                        <div class="flex items-center justify-center w-12 h-12 rounded-xl font-black rotate-3 ${
-                            pos === 1 ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-500'
-                        }">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full font-black ${pos === 1 ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-500'}">
                             ${pos}
                         </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white uppercase tracking-tight">${name}</h3>
-                            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Puntuación Media</p>
-                        </div>
+                        <h3 class="text-xl font-bold uppercase italic">${item.name}</h3>
                     </div>
                     <div class="text-right">
-                        <span class="text-3xl font-mono font-black ${pos === 1 ? 'text-yellow-400' : 'text-zinc-400'}">
-                            ${score.toFixed(2)}
+                        <span class="text-2xl font-mono font-black ${pos === 1 ? 'text-yellow-400' : 'text-zinc-400'}">
+                            ${item.avg.toFixed(2)}
                         </span>
-                        <div class="w-28 h-1.5 bg-zinc-800 rounded-full mt-2 overflow-hidden shadow-inner">
-                            <div class="h-full bg-gradient-to-r from-yellow-700 to-yellow-400 transition-all duration-1000" style="width: ${score * 10}%"></div>
-                        </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Inicio y bucle
         fetchRanking();
-        setInterval(fetchRanking, 15000); // 15 segundos para que sea más reactivo
+        setInterval(fetchRanking, 10000); // Cada 10 segundos
     </script>
 </body>
 </html>
