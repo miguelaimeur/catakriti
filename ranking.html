@@ -1,3 +1,4 @@
+```html id="n5g8vt"
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,31 +7,49 @@
     <title>Ranking Kritical</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white min-h-screen p-6 font-sans">
 
-    <div class="max-w-2xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-black uppercase italic tracking-tighter text-yellow-500">
+<body class="bg-black text-white min-h-screen p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+
+        <header class="text-center mb-12">
+
+            <h1 class="text-6xl md:text-7xl font-black uppercase italic tracking-tighter text-yellow-500">
                 Ranking Kritical
             </h1>
 
-            <div class="mt-2 text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">
+            <div class="mt-5 text-lg md:text-xl font-black uppercase tracking-[0.15em] text-zinc-300">
+                Visita 
+                <span class="text-yellow-500">
+                    WWW.CATAKRITI.COM
+                </span>
+                y participa
+            </div>
+
+            <div class="mt-4 text-sm font-mono text-zinc-500 uppercase tracking-[0.3em]">
                 Resultados Consolidados • Tiempo Real
             </div>
+
         </header>
 
-        <div id="ranking-container" class="space-y-3">
+        <div id="ranking-container" class="space-y-5">
             <!-- Cargando datos -->
         </div>
+
     </div>
 
     <script>
+
         const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
+
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
         async function updateRanking() {
+
             try {
+
                 const response = await fetch(URL);
+
                 const csvText = await response.text();
 
                 // Procesar CSV
@@ -56,6 +75,7 @@
                     if (variedad && !isNaN(nota)) {
 
                         if (!stats[variedad]) {
+
                             stats[variedad] = {
                                 total: 0,
                                 count: 0
@@ -78,6 +98,7 @@
                 render(ranking);
 
             } catch (err) {
+
                 console.error("Error:", err);
             }
         }
@@ -85,20 +106,24 @@
         function render(data) {
 
             const container = document.getElementById('ranking-container');
+
             container.innerHTML = '';
 
             if (data.length === 0) {
+
                 container.innerHTML = `
-                    <p class="text-center text-zinc-600 italic py-10">
+                    <p class="text-center text-zinc-600 italic py-10 text-2xl">
                         Esperando primeras puntuaciones...
                     </p>
                 `;
+
                 return;
             }
 
             data.forEach((item, index) => {
 
                 const pos = index + 1;
+
                 const card = document.createElement('div');
 
                 // Colores podium
@@ -122,39 +147,41 @@
 
                 card.className = `
                     flex items-center justify-between
-                    p-4
-                    bg-zinc-900/50
-                    border-l-4 ${borderColor}
-                    rounded-r-xl
-                    shadow-lg
+                    p-6
+                    bg-zinc-900/60
+                    border-l-8 ${borderColor}
+                    rounded-r-2xl
+                    shadow-2xl
                 `;
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-6">
 
-                        <span class="text-2xl font-black italic ${textColor}">
+                        <span class="text-5xl font-black italic ${textColor}">
                             #${pos}
                         </span>
 
                         <div class="flex flex-col">
-                            <span class="text-lg font-bold uppercase tracking-tight">
+
+                            <span class="text-3xl md:text-4xl font-black uppercase tracking-tight">
                                 ${item.name}
                             </span>
 
-                            <span class="text-xs text-zinc-500">
+                            <span class="text-lg text-zinc-400 mt-1">
                                 ${item.votes} voto${item.votes !== 1 ? 's' : ''}
                             </span>
+
                         </div>
 
                     </div>
 
                     <div class="flex flex-col items-end">
 
-                        <span class="text-2xl font-mono font-black ${textColor}">
+                        <span class="text-5xl md:text-6xl font-mono font-black ${textColor}">
                             ${item.avg.toFixed(2)}
                         </span>
 
-                        <span class="text-[8px] uppercase text-zinc-600 font-bold tracking-widest">
+                        <span class="text-sm uppercase text-zinc-500 font-bold tracking-[0.2em] mt-1">
                             Media Final
                         </span>
 
@@ -174,3 +201,4 @@
 
 </body>
 </html>
+```
