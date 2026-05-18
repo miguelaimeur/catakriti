@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,13 +14,14 @@
             <h1 class="text-4xl font-black uppercase italic tracking-tighter text-yellow-500">
                 Ranking de Variedades
             </h1>
+
             <div class="mt-2 text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">
                 Resultados Consolidados • Tiempo Real
             </div>
         </header>
 
         <div id="ranking-container" class="space-y-3">
-            <!-- Cargando datos... -->
+            <!-- Cargando datos -->
         </div>
     </div>
 
@@ -31,79 +33,146 @@
             try {
                 const response = await fetch(URL);
                 const csvText = await response.text();
-                
-                // Procesar CSV (C es Variedad [2], E es Nota [4])
+
+                // Procesar CSV
                 const rows = csvText.split('\n').map(row => {
-                    // Esta expresión regular maneja mejor las comas dentro de comillas
                     return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 });
 
                 const stats = {};
 
-                // Empezamos en 1 para saltar la cabecera
+                // Saltar cabecera
                 for (let i = 1; i < rows.length; i++) {
-                    let variedad = rows[i][2]?.replace(/"/g, '').trim();
-                    let nota = parseFloat(rows[i][4]?.replace(/"/g, '').replace(',', '.'));
+
+                    let variedad = rows[i][2]
+                        ?.replace(/"/g, '')
+                        .trim();
+
+                    let nota = parseFloat(
+                        rows[i][4]
+                        ?.replace(/"/g, '')
+                        .replace(',', '.')
+                    );
 
                     if (variedad && !isNaN(nota)) {
+
                         if (!stats[variedad]) {
-                            stats[variedad] = { total: 0, count: 0 };
+                            stats[variedad] = {
+                                total: 0,
+                                count: 0
+                            };
                         }
+
                         stats[variedad].total += nota;
                         stats[variedad].count += 1;
                     }
                 }
 
-                const ranking = Object.keys(stats).map(name => ({
-                    name,
-                    avg: stats[name].total / stats[name].count
-                })).sort((a, b) => b.avg - a.avg);
+                const ranking = Object.keys(stats)
+                    .map(name => ({
+                        name,
+                        avg: stats[name].total / stats[name].count,
+                        votes: stats[name].count
+                    }))
+                    .sort((a, b) => b.avg - a.avg);
 
                 render(ranking);
+
             } catch (err) {
                 console.error("Error:", err);
             }
         }
 
         function render(data) {
+
             const container = document.getElementById('ranking-container');
             container.innerHTML = '';
 
             if (data.length === 0) {
-                container.innerHTML = '<p class="text-center text-zinc-600 italic py-10">Esperando primeras puntuaciones...</p>';
+                container.innerHTML = `
+                    <p class="text-center text-zinc-600 italic py-10">
+                        Esperando primeras puntuaciones...
+                    </p>
+                `;
                 return;
             }
 
             data.forEach((item, index) => {
+
                 const pos = index + 1;
                 const card = document.createElement('div');
-                
-                // Estilo: Oro para el 1º, Plata para el 2º, Bronce para el 3º
+
+                // Colores podium
                 let borderColor = "border-zinc-800";
                 let textColor = "text-zinc-400";
-                if(pos === 1) { borderColor = "border-yellow-500"; textColor = "text-yellow-500"; }
-                if(pos === 2) { borderColor = "border-zinc-400"; textColor = "text-zinc-200"; }
-                if(pos === 3) { borderColor = "border-orange-700"; textColor = "text-orange-500"; }
 
-                card.className = `flex items-center justify-between p-4 bg-zinc-900/50 border-l-4 ${borderColor} rounded-r-xl shadow-lg`;
+                if (pos === 1) {
+                    borderColor = "border-yellow-500";
+                    textColor = "text-yellow-500";
+                }
+
+                if (pos === 2) {
+                    borderColor = "border-zinc-400";
+                    textColor = "text-zinc-200";
+                }
+
+                if (pos === 3) {
+                    borderColor = "border-orange-700";
+                    textColor = "text-orange-500";
+                }
+
+                card.className = `
+                    flex items-center justify-between
+                    p-4
+                    bg-zinc-900/50
+                    border-l-4 ${borderColor}
+                    rounded-r-xl
+                    shadow-lg
+                `;
 
                 card.innerHTML = `
                     <div class="flex items-center gap-4">
-                        <span class="text-2xl font-black italic ${textColor}">#${pos}</span>
-                        <span class="text-lg font-bold uppercase tracking-tight">${item.name}</span>
+
+                        <span class="text-2xl font-black italic ${textColor}">
+                            #${pos}
+                        </span>
+
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold uppercase tracking-tight">
+                                ${item.name}
+                            </span>
+
+                            <span class="text-xs text-zinc-500">
+                                ${item.votes} voto${item.votes !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+
                     </div>
+
                     <div class="flex flex-col items-end">
-                        <span class="text-2xl font-mono font-black ${textColor}">${item.avg.toFixed(2)}</span>
-                        <span class="text-[8px] uppercase text-zinc-600 font-bold tracking-widest">Media Final</span>
+
+                        <span class="text-2xl font-mono font-black ${textColor}">
+                            ${item.avg.toFixed(2)}
+                        </span>
+
+                        <span class="text-[8px] uppercase text-zinc-600 font-bold tracking-widest">
+                            Media Final
+                        </span>
+
                     </div>
                 `;
+
                 container.appendChild(card);
             });
         }
 
         updateRanking();
+
         // Actualizar cada 10 segundos
         setInterval(updateRanking, 10000);
+
     </script>
+
 </body>
 </html>
+```
