@@ -9,75 +9,96 @@
 
     <style>
         html, body {
+            overflow: hidden;
             height: 100%;
             margin: 0;
-            background-color: #050506;
+            background-color: #040405;
         }
 
-        /* Fondo dinámico sutil para romper la monotonía del negro absoluto */
-        .bg-mesh {
+        /* Fondo dinámico elegante: movimiento sutil de gradiente + líneas de cuadrícula */
+        .bg-dinamico {
+            position: relative;
+            background: linear-gradient(135deg, #050508 0%, #0d0a0f 50%, #06080c 100%);
+            background-size: 400% 400%;
+            animation: gradienteSuave 20s ease infinite;
+        }
+
+        /* Líneas de cuadrícula fijas sobrepuestas para dar textura tecnológica */
+        .bg-dinamico::before {
+            content: "";
+            position: absolute;
+            inset: 0;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(234, 179, 8, 0.07) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
         }
 
-        /* Desplazamiento suave y estilización de barra para pantallas grandes */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(234, 179, 8, 0.3);
+        @keyframes gradienteSuave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        /* Animación de entrada para las tarjetas */
+        /* Animación suave de entrada */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .animate-fade-in {
             animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        /* Estilo elástico adaptativo para rellenar el espacio sin hacer scroll */
+        .grid-adaptativo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            align-content: stretch;
+            gap: 0.5rem;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* En pantallas móviles muy pequeñas ajustamos el mínimo por columna */
+        @media (max-width: 480px) {
+            .grid-adaptativo {
+                grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+                gap: 0.35rem;
+            }
+        }
     </style>
 </head>
 
-<body class="text-zinc-100 font-sans bg-mesh p-4 md:p-6 flex flex-col h-screen overflow-hidden">
+<body class="text-zinc-100 font-sans bg-dinamico p-3 md:p-5 flex flex-col h-screen select-none">
 
-    <div class="w-full max-w-[1600px] mx-auto flex flex-col h-full gap-6">
+    <div class="w-full max-w-[1920px] mx-auto flex flex-col h-full gap-3 md:gap-4 z-10 relative">
 
         <header class="text-center shrink-0 flex flex-col items-center">
             
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] mb-3 shadow-inner">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Resultados Consolidados • Tiempo Real
+            <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-zinc-900/60 border border-zinc-800/80 text-[9px] md:text-xs font-mono text-zinc-400 uppercase tracking-[0.15em] mb-1.5 shadow-inner">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Resultados Consolidados • En Vivo
             </div>
 
-            <h1 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 bg-clip-text text-transparent leading-none drop-shadow-[0_2px_10px_rgba(234,179,8,0.15)]">
+            <h1 class="text-4xl md:text-6xl font-black uppercase italic tracking-tighter bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 bg-clip-text text-transparent leading-none drop-shadow-[0_2px_8px_rgba(234,179,8,0.1)]">
                 Ranking Kritical
             </h1>
 
-            <div class="mt-3 text-sm md:text-lg font-bold uppercase tracking-[0.2em] text-zinc-400 bg-zinc-900/40 px-4 py-1.5 rounded-xl border border-zinc-900">
-                Visita <span class="text-yellow-400 font-black underline decoration-wavy decoration-amber-500/50 underline-offset-4">WWW.CATAKRITI.COM</span> y participa
+            <div class="mt-1.5 text-xs md:text-base font-bold uppercase tracking-[0.15em] text-zinc-400">
+                Visita <span class="text-yellow-400 font-black">WWW.CATAKRITI.COM</span> y participa
             </div>
 
         </header>
 
-        <div class="flex-1 flex flex-col gap-6 overflow-hidden min-h-0">
+        <div class="flex-1 flex flex-col gap-3 md:gap-4 overflow-hidden min-h-0">
 
-            <div id="top3-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+            <div id="top3-container" class="grid grid-cols-3 gap-2 md:gap-4 shrink-0">
                 </div>
 
-            <div class="flex-1 flex flex-col min-h-0 bg-zinc-950/40 border border-zinc-900 rounded-2xl p-4">
-                <h3 class="text-xs font-bold tracking-[0.3em] uppercase text-zinc-500 mb-3 px-1">Clasificación General</h3>
-                <div id="rest-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div class="flex-1 flex flex-col min-h-0 bg-zinc-950/20 border border-zinc-900/60 rounded-xl p-2 md:p-3 overflow-hidden">
+                <div id="rest-container" class="grid-adaptativo">
                     </div>
             </div>
 
@@ -94,7 +115,6 @@
                 const response = await fetch(URL);
                 const csvText = await response.text();
 
-                // .replace(/\r/g, "") limpia retornos de carro invisibles que rompen el mapeo
                 const rows = csvText.replace(/\r/g, "").split('\n').map(row => {
                     return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 });
@@ -114,7 +134,6 @@
                     }
                 }
 
-                // Eliminamos el .slice(0, 20) para permitir que lea TODO el set de datos
                 const ranking = Object.keys(stats)
                     .map(name => ({
                         name,
@@ -139,98 +158,93 @@
 
             if (data.length === 0) {
                 rest.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-12 gap-2">
-                        <span class="text-zinc-600 italic text-xl font-medium animate-pulse">
-                            Esperando primeras puntuaciones...
-                        </span>
+                    <div class="h-full w-full flex items-center justify-center col-span-full">
+                        <span class="text-zinc-600 italic text-lg animate-pulse">Esperando datos...</span>
                     </div>
                 `;
                 return;
             }
 
+            // Calculamos cuántos elementos van al grupo secundario para ajustar tipografías si hay saturación
+            const totalResto = data.length - 3;
+
             data.forEach((item, index) => {
                 const pos = index + 1;
 
                 if (pos <= 3) {
-                    // CONFIGURACIÓN VISUAL PREMIUM PARA EL TOP 3
                     let styles = {
                         1: {
-                            border: "border-amber-500/40",
-                            bg: "bg-gradient-to-b from-amber-500/10 to-transparent",
+                            border: "border-amber-500/30",
+                            bg: "bg-gradient-to-b from-amber-500/10 to-zinc-900/10",
                             text: "text-amber-400",
-                            glow: "shadow-[0_0_30px_rgba(245,158,11,0.05)]",
-                            badge: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            badge: "bg-amber-500/20 text-amber-300 border-amber-500/20"
                         },
                         2: {
-                            border: "border-zinc-400/30",
-                            bg: "bg-gradient-to-b from-zinc-400/5 to-transparent",
+                            border: "border-zinc-400/20",
+                            bg: "bg-gradient-to-b from-zinc-400/5 to-zinc-900/10",
                             text: "text-zinc-300",
-                            glow: "shadow-none",
                             badge: "bg-zinc-400/10 text-zinc-300 border-zinc-400/20"
                         },
                         3: {
-                            border: "border-orange-600/30",
-                            bg: "bg-gradient-to-b from-orange-600/5 to-transparent",
+                            border: "border-orange-600/20",
+                            bg: "bg-gradient-to-b from-orange-600/5 to-zinc-900/10",
                             text: "text-orange-400",
-                            glow: "shadow-none",
                             badge: "bg-orange-600/10 text-orange-400 border-orange-600/20"
                         }
                     }[pos];
 
                     const card = document.createElement('div');
-                    card.className = `animate-fade-in ${styles.bg} border ${styles.border} ${styles.glow} rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-zinc-700 transition-all duration-300`;
+                    card.className = `animate-fade-in ${styles.bg} border ${styles.border} rounded-xl p-3 md:p-4 flex flex-col justify-between relative overflow-hidden`;
                     
                     card.innerHTML = `
-                        <div class="absolute -right-4 -bottom-6 text-9xl font-black italic text-white/[0.02] pointer-events-none select-none font-mono">
-                            #${pos}
-                        </div>
-                        
-                        <div class="flex justify-between items-start gap-4">
+                        <div class="flex justify-between items-start gap-2">
                             <div class="min-w-0">
-                                <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold border ${styles.badge}">
-                                    PUESTO 0${pos}
+                                <span class="inline-block px-1.5 py-0.5 rounded text-[9px] md:text-xs font-mono font-bold border ${styles.badge}">
+                                    TOP 0${pos}
                                 </span>
-                                <h2 class="mt-3 text-xl md:text-2xl font-black uppercase tracking-tight text-white truncate group-hover:text-amber-400 transition-colors">
+                                <h2 class="mt-1 text-sm md:text-xl font-black uppercase tracking-tight text-white truncate">
                                     ${item.name}
                                 </h2>
                             </div>
                             <div class="text-right shrink-0">
-                                <div class="text-4xl md:text-5xl font-black font-mono tracking-tight ${styles.text}">
+                                <div class="text-xl md:text-4xl font-black font-mono ${styles.text}">
                                     ${item.avg.toFixed(2)}
                                 </div>
-                                <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold mt-0.5">
+                                <div class="text-[8px] md:text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
                                     Media
                                 </div>
                             </div>
                         </div>
-
-                        <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs text-zinc-400">
-                            <span class="font-medium">${item.votes} ${item.votes === 1 ? 'voto registrado' : 'votos registrados'}</span>
-                            <span class="font-mono text-zinc-600">ID_0${pos}</span>
+                        <div class="mt-2 text-[9px] md:text-xs text-zinc-400 font-mono">
+                            ${item.votes} ${item.votes === 1 ? 'voto' : 'votos'}
                         </div>
                     `;
                     top3.appendChild(card);
 
                 } else {
-                    // FILAS COMPACTAS Y ELEGANTES PARA EL RESTO DE ELEMENTOS (4 en adelante)
+                    // FILAS COMPACTAS Y ULTRA-ADAPTATIVAS
+                    // Si hay demasiados elementos en pantalla, reducimos ligeramente los textos de manera automática
+                    const textSize = totalResto > 15 ? 'text-[11px] md:text-xs' : 'text-xs md:text-sm';
+                    const paddingSize = totalResto > 15 ? 'py-1 px-2' : 'py-1.5 px-2.5';
+
                     const card = document.createElement('div');
-                    card.className = `animate-fade-in bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-900 hover:border-zinc-800 rounded-xl px-3.5 py-3 flex items-center justify-between gap-3 transition-all duration-200`;
+                    card.className = `animate-fade-in bg-zinc-900/20 border border-zinc-900/80 rounded-lg ${paddingSize} flex items-center justify-between gap-2 h-full min-h-[38px] md:min-h-[45px]`;
 
                     card.innerHTML = `
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center font-mono text-sm font-black text-zinc-500 shrink-0 border border-zinc-800/60">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-mono text-[10px] md:text-xs font-bold text-zinc-600 shrink-0">
                                 #${pos}
-                            </div>
+                            </span>
                             <div class="min-w-0">
-                                <div class="text-xs md:text-sm font-bold uppercase text-zinc-200 truncate">
+                                <div class="${textSize} font-bold uppercase text-zinc-300 truncate">
                                     ${item.name}
                                 </div>
-                                <div class="text-[11px] text-zinc-500 font-medium">
-                                    ${item.votes} ${item.votes === 1 ? 'voto' : 'votos'}
+                                <div class="text-[9px] text-zinc-500 font-medium leading-none">
+                                    ${item.votes} v.
                                 </div>
                             </div>
                         </div>
-                        <div class="text-lg font-black font-mono text-zinc-400 bg-zinc-950/80 px-2.5 py-1 rounded-md border border-zinc-900">
+                        <div class="text-xs md:text-base font-black font-mono text-zinc-400 bg-zinc-950/60 px-1.5 py-0.5 rounded border border-zinc-900 shrink-0">
                             ${item.avg.toFixed(2)}
                         </div>
                     `;
@@ -239,7 +253,6 @@
             });
         }
 
-        // Inicialización y Loop de consulta continua
         updateRanking();
         setInterval(updateRanking, 10000);
     </script>
