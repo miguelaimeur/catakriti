@@ -1,674 +1,379 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Cata PRO - Sistema de Registro</title>
-
     <style>
-
         :root {
-
             --primary: #2ecc71;
-
             --primary-hover: #27ae60;
-
             --bg-main: #0d0d0d;
-
             --bg-card: #181818;
-
             --bg-input: #252525;
-
             --border-color: #2a2a2a;
-
             --text-main: #f5f5f5;
-
             --text-muted: #a0a0a0;
-
         }
-
-
 
         body { 
-
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-
             background: var(--bg-main); 
-
             color: var(--text-main); 
-
             padding: 20px; 
-
             line-height: 1.6;
-
             margin: 0;
-
         }
-
         
-
         .container { max-width: 650px; margin: auto; padding-bottom: 5px; }
-
         
-
         .card { 
-
             background: var(--bg-card); 
-
             padding: 24px; 
-
             border-radius: 16px; 
-
             margin-top: 20px; 
-
             border: 1px solid var(--border-color);
-
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-
+            transition: all 0.3s ease;
         }
-
         
-
-        h1 { text-align: center; color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
-
-        h2 { font-size: 1.4rem; color: #fff; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-
+        h1 { 
+            text-align: center; 
+            color: var(--primary); 
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        h2 { 
+            font-size: 1.4rem;
+            color: #fff;
+            margin-top: 0; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         h3 { font-size: 1.1rem; margin: 0 0 4px 0; color: #fff; }
 
-
-
         input[type="text"], input[type="number"], textarea { 
-
-            width: 100%; padding: 14px; margin-top: 10px; border-radius: 10px; 
-
-            border: 1px solid var(--border-color); box-sizing: border-box; 
-
-            background: var(--bg-input); color: #fff; font-size: 1rem;
-
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 10px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            box-sizing: border-box; 
+            background: var(--bg-input); 
+            color: #fff; 
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-
         
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
+        }
 
         button { 
-
-            width: 100%; padding: 14px; margin-top: 20px; border-radius: 10px; border: none; 
-
-            box-sizing: border-box; background: var(--primary); color: #051a0e; 
-
-            font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: all 0.2s ease; 
-
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 20px; 
+            border-radius: 10px; 
+            border: none; 
+            box-sizing: border-box; 
+            background: var(--primary); 
+            color: #051a0e; 
+            font-weight: bold; 
+            font-size: 1.05rem;
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+        }
+        
+        button:hover { 
+            background: var(--primary-hover); 
+            transform: translateY(-1px); 
+        }
+        
+        button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        
-
-        button:disabled { background: #444; color: #888; cursor: not-allowed; }
-
-
-
-        .criterio-row { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
-
+        /* Contenedor del Criterio */
+        .criterio-row {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
         .criterio-row:last-child { border-bottom: none; }
-
-        .criterio-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+        
+        .criterio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
 
         .small { font-size: 0.88em; color: var(--text-muted); }
-
         
-
         .badge-nota {
-
-            background: rgba(46, 204, 113, 0.1); color: var(--primary); padding: 4px 10px;
-
-            border-radius: 6px; font-weight: bold; font-size: 0.95rem; border: 1px solid rgba(46, 204, 113, 0.2);
-
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            border: 1px solid rgba(46, 204, 113, 0.2);
         }
 
+        /* Estilización del Control Deslizante (Slider) */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
 
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 5px;
+            outline: none;
+        }
 
-        .slider-container { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
 
-        input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--bg-input); border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
 
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; }
-
-
-
-        .nota-box { text-align: center; background: #111; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin: 20px 0; }
-
+        /* Nota Destacada Global */
+        .nota-box {
+            text-align: center; 
+            background: #111;
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
         .nota-destacada { font-size: 2rem; color: var(--primary); font-weight: 800; display: block; margin-top: 5px;}
 
-
-
+        /* Estados de carga/envío */
         .status { margin-top:15px; padding:14px; border-radius:10px; display:none; text-align: center; font-weight: bold; font-size: 0.95rem; }
-
         .status.success { background: rgba(46, 204, 113, 0.2); color: #5efc99; border: 1px solid var(--primary); }
-
         .status.error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #e74c3c; }
-
         .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
-
         .status.show { display:block; }
 
-
-
-        .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
-
-        .lista-item {
-
-            background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px;
-
-            border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
-
+        /* Historial */
+        .historial-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
+        .historial-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .rank-number { font-weight: bold; color: var(--primary); margin-right: 8px; }
-
     </style>
-
 </head>
-
 <body>
 
-
-
 <div class="container">
-
     <h1>🌿 Cata PRO</h1>
 
-
-
     <div class="card" id="fase1">
-
         <h2>📋 Paso 1: Información</h2>
-
         <input id="nombre" type="text" placeholder="Tu nombre / Catador">
-
         <input id="variedad" type="text" placeholder="Nombre de la Variedad">
-
         <button onclick="iniciar()">Empezar cata</button>
-
     </div>
-
-
 
     <div class="card" id="fase2" style="display: none;">
-
         <h2>📊 Paso 2: Evaluación</h2>
-
         <div id="criterios"></div>
 
-
-
         <div style="margin-top:25px;">
-
             <h3>💬 Comentarios adicionales</h3>
-
             <textarea id="comentarios" rows="3" placeholder="Notas sobre el sabor, ceniza, curado..."></textarea>
-
             
-
             <h3 style="margin-top:20px;">💰 Valoración económica</h3>
-
             <input id="precio" type="number" placeholder="¿Cuánto pagarías por g? (€)">
-
         </div>
-
-
 
         <div class="nota-box">
-
             <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nota Final Estimada</span>
-
             <span id="notaFinal" class="nota-destacada">5.00</span>
-
         </div>
 
-
-
         <button id="btnGuardar" onclick="guardar()">Finalizar y Guardar en Drive</button>
-
         <div id="status" class="status"></div>
-
     </div>
 
-
-
-    <h2 class="seccion-title">🏆 Top Variedades (Ranking General de la Nube)</h2>
-
-    <div id="ranking">
-
-        <div class="small" style="text-align:center; padding:20px; color:var(--primary);">⏳ Sincronizando ranking con Google Sheets...</div>
-
-    </div>
-
-
-
-    <h2 class="seccion-title">📜 Mis últimas catas locales</h2>
-
+    <h2 class="historial-title">📜 Historial Reciente</h2>
     <div id="historial"></div>
-
 </div>
 
-
-
 <script>
-
-    // Tu URL de Google Apps Script
-
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
-
-
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
-
     const criteriosLista = [
-
         ["Aspecto", "Visual, resina, densidad de tricomas"],
-
         ["Olor", "Intensidad y perfil aromático en seco"],
-
         ["Olor tras grinder", "Explosión de aromas al picar"],
-
         ["Sabor", "Fidelidad al olor y limpieza en boca"],
-
         ["Punch", "Rapidez del primer impacto"],
-
         ["Pegada", "Potencia máxima alcanzada"],
-
         ["Efecto", "Calidad y duración de la experiencia"]
-
     ];
 
-
-
     let puntuaciones = {};
-
-    let catasLocales = JSON.parse(localStorage.getItem("catas")) || [];
-
-
+    let catas = JSON.parse(localStorage.getItem("catas")) || [];
 
     function iniciar() {
-
         const nom = document.getElementById("nombre").value.trim();
-
         const varid = document.getElementById("variedad").value.trim();
-
-        if(!nom || !varid) { alert("Por favor, introduce tu nombre y la variedad."); return; }
-
         
-
+        if(!nom || !varid) {
+            alert("Por favor, introduce tu nombre y la variedad.");
+            return;
+        }
+        
         document.getElementById("fase1").style.display = "none";
-
         document.getElementById("fase2").style.display = "block";
-
         
-
         const criteriosDiv = document.getElementById("criterios");
-
         criteriosDiv.innerHTML = "";
-
         puntuaciones = {};
 
-
-
         criteriosLista.forEach(c => {
-
+            // Por defecto los sliders inician al centro (5)
             puntuaciones[c[0]] = 5; 
 
             let bloque = document.createElement("div");
-
             bloque.className = "criterio-row";
-
+            
             bloque.innerHTML = `
-
                 <div class="criterio-header">
-
-                    <div><h3>${c[0]}</h3><div class="small">${c[1]}</div></div>
-
+                    <div>
+                        <h3>${c[0]}</h3>
+                        <div class="small">${c[1]}</div>
+                    </div>
                     <span class="badge-nota" id="val-${c[0]}">5</span>
-
                 </div>
-
-                <div class="slider-container"><input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}"></div>
-
+                <div class="slider-container">
+                    <input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}">
+                </div>
             `;
-
+            
             criteriosDiv.appendChild(bloque);
 
-
-
-            bloque.querySelector(`#slider-${c[0]}`).addEventListener('input', (e) => {
-
+            // Escuchar el movimiento del slider en tiempo real
+            const slider = bloque.querySelector(`#slider-${c[0]}`);
+            slider.addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
-
                 document.getElementById(`val-${c[0]}`).textContent = val;
-
                 puntuaciones[c[0]] = val;
-
                 calcular();
-
             });
-
         });
 
-        calcular();
-
+        calcular(); // Cálculo inicial con los valores base (5)
     }
-
-
 
     function calcular() {
-
         let total = 0, pesoTotal = 0;
-
-        for(let k in puntuaciones) { total += puntuaciones[k] * pesos[k]; pesoTotal += pesos[k]; }
-
+        for(let k in puntuaciones) { 
+            total += puntuaciones[k] * pesos[k]; 
+            pesoTotal += pesos[k]; 
+        }
         let nota = pesoTotal > 0 ? (total / pesoTotal).toFixed(2) : "0.00";
-
         document.getElementById("notaFinal").textContent = nota;
-
         return nota;
-
     }
 
-
-
     function guardar() {
-
         const btn = document.getElementById("btnGuardar");
-
         btn.disabled = true;
-
         btn.innerText = "Enviando datos...";
 
-
-
         const nuevaCata = {
-
             fecha: new Date().toLocaleString('es-ES'),
-
-            nombre: document.getElementById("nombre").value.trim(),
-
-            variedad: document.getElementById("variedad").value.trim(),
-
+            nombre: document.getElementById("nombre").value,
+            variedad: document.getElementById("variedad").value,
             precio: document.getElementById("precio").value || "0",
-
             nota: calcular(),
-
             comentarios: document.getElementById("comentarios").value,
-
             ...puntuaciones 
-
         };
 
-
-
-        catasLocales.unshift(nuevaCata);
-
-        localStorage.setItem("catas", JSON.stringify(catasLocales));
-
+        catas.unshift(nuevaCata);
+        localStorage.setItem("catas", JSON.stringify(catas));
         renderHistorial();
 
         mostrarStatus("⏳ Conectando con Google Sheets...", "info");
 
-
-
         fetch(GOOGLE_SHEETS_URL, {
-
             method: "POST",
-
             mode: "no-cors",
-
             headers: { "Content-Type": "text/plain" },
-
             body: JSON.stringify(nuevaCata)
-
         })
-
         .then(() => {
-
             mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
-
-            setTimeout(() => { location.reload(); }, 2000);
-
+            setTimeout(() => {
+                location.reload();
+            }, 2500);
         })
-
         .catch(err => {
-
             console.error(err);
-
             mostrarStatus("❌ Error al enviar. Se guardó localmente.", "error");
-
             btn.disabled = false;
-
             btn.innerText = "Reintentar Guardar";
-
         });
-
     }
-
-
 
     function mostrarStatus(mensaje, tipo) {
-
         const statusDiv = document.getElementById("status");
-
         statusDiv.textContent = mensaje;
-
         statusDiv.className = "status show " + tipo;
-
     }
-
-
-
-    function capitalizarTexto(texto) {
-
-        if (!texto) return "";
-
-        return texto.trim().toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-
-    }
-
-
 
     function renderHistorial() {
-
         const historialDiv = document.getElementById("historial");
-
         historialDiv.innerHTML = "";
-
-        catasLocales.slice(0, 5).forEach(c => {
-
+        catas.slice(0, 5).forEach(c => {
             let item = document.createElement("div");
-
-            item.className = "lista-item";
-
+            item.className = "historial-item";
             item.innerHTML = `
-
                 <div>
-
-                    <strong style="font-size:1.1rem; color:#fff;">${capitalizarTexto(c.variedad)}</strong>
-
-                    <div class="small" style="margin-top:2px;">${c.fecha} - por ${c.nombre}</div>
-
+                    <strong style="font-size:1.1rem; color:#fff;">${c.variedad}</strong>
+                    <div class="small" style="margin-top:2px;">${c.fecha}</div>
                 </div>
-
                 <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px;">${c.nota}</span>
-
             `;
-
             historialDiv.appendChild(item);
-
         });
-
     }
-
-
-
-    // NUEVA FUNCIÓN: Descarga los datos reales de tu Google Sheets para armar el ranking global
-
-    function cargarRankingDesdeNube() {
-
-        // Hacemos una petición GET a tu Web App de Google
-
-        fetch(GOOGLE_SHEETS_URL)
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            procesarYMostrarRanking(data);
-
-        })
-
-        .catch(err => {
-
-            console.error("Error al leer de Google Sheets:", err);
-
-            // Si falla la red o tu script de Google no soporta GET, usa los datos locales como respaldo
-
-            procesarYMostrarRanking(catasLocales);
-
-        });
-
-    }
-
-
-
-    function procesarYMostrarRanking(listaCatas) {
-
-        const rankingDiv = document.getElementById("ranking");
-
-        rankingDiv.innerHTML = "";
-
-
-
-        if (!listaCatas || listaCatas.length === 0) {
-
-            rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos en la nube para el ranking.</div>";
-
-            return;
-
-        }
-
-
-
-        let variedadesAgrupadas = {};
-
-
-
-        listaCatas.forEach(c => {
-
-            if (!c.variedad) return;
-
-            
-
-            // KEY ÚNICA: Forzamos minúsculas y eliminamos espacios fantasmas
-
-            let clave = c.variedad.trim().toLowerCase(); 
-
-            
-
-            if (!variedadesAgrupadas[clave]) {
-
-                variedadesAgrupadas[clave] = {
-
-                    nombreOriginal: c.variedad.trim(),
-
-                    sumaNotas: 0,
-
-                    totalCatas: 0
-
-                };
-
-            }
-
-            variedadesAgrupadas[clave].sumaNotas += parseFloat(c.nota);
-
-            variedadesAgrupadas[clave].totalCatas += 1;
-
-        });
-
-
-
-        // Convertir a Array y ordenar
-
-        let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
-
-            let datos = variedadesAgrupadas[clave];
-
-            return {
-
-                nombre: capitalizarTexto(datos.nombreOriginal),
-
-                promedio: (datos.sumaNotas / datos.totalCatas).toFixed(2),
-
-                totalCatas: datos.totalCatas
-
-            };
-
-        });
-
-
-
-        // Ordenar de mayor a menor nota
-
-        rankingArray.sort((a, b) => b.promedio - a.promedio);
-
-
-
-        // LÍMITE: Muestra hasta 40 variedades en lista sin problemas
-
-        let topVariedades = rankingArray.slice(0, 40); 
-
-
-
-        topVariedades.forEach((itemData, index) => {
-
-            let item = document.createElement("div");
-
-            item.className = "lista-item";
-
-            item.innerHTML = `
-
-                <div>
-
-                    <strong style="font-size:1.1rem; color:#fff;">
-
-                        <span class="rank-number">#${index + 1}</span>${itemData.nombre}
-
-                    </strong>
-
-                    <div class="small" style="margin-top:2px;">${itemData.totalCatas} cata(s) en total</div>
-
-                </div>
-
-                <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px; background: rgba(46, 204, 113, 0.2);">${itemData.promedio}</span>
-
-            `;
-
-            rankingDiv.appendChild(item);
-
-        });
-
-    }
-
-
-
-    // Inicialización al abrir la app
 
     renderHistorial();
-
-    cargarRankingDesdeNube();
-
 </script>
-
 </body>
-
-</html> 
-
+</html>
