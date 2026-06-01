@@ -34,168 +34,55 @@
             margin-top: 20px; 
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            transition: all 0.3s ease;
         }
         
-        h1 { 
-            text-align: center; 
-            color: var(--primary); 
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-        }
-        
-        h2 { 
-            font-size: 1.4rem;
-            color: #fff;
-            margin-top: 0; 
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
+        h1 { text-align: center; color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
+        h2 { font-size: 1.4rem; color: #fff; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         h3 { font-size: 1.1rem; margin: 0 0 4px 0; color: #fff; }
 
         input[type="text"], input[type="number"], textarea { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 10px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-            box-sizing: border-box; 
-            background: var(--bg-input); 
-            color: #fff; 
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            width: 100%; padding: 14px; margin-top: 10px; border-radius: 10px; 
+            border: 1px solid var(--border-color); box-sizing: border-box; 
+            background: var(--bg-input); color: #fff; font-size: 1rem;
         }
         
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
-        }
-
         button { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 20px; 
-            border-radius: 10px; 
-            border: none; 
-            box-sizing: border-box; 
-            background: var(--primary); 
-            color: #051a0e; 
-            font-weight: bold; 
-            font-size: 1.05rem;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
+            width: 100%; padding: 14px; margin-top: 20px; border-radius: 10px; border: none; 
+            box-sizing: border-box; background: var(--primary); color: #051a0e; 
+            font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: all 0.2s ease; 
         }
         
-        button:hover { 
-            background: var(--primary-hover); 
-            transform: translateY(-1px); 
-        }
-        
-        button:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-            transform: none;
-        }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-        /* Contenedor del Criterio */
-        .criterio-row {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .criterio-row { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
         .criterio-row:last-child { border-bottom: none; }
-        
-        .criterio-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 8px;
-        }
-
+        .criterio-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
         .small { font-size: 0.88em; color: var(--text-muted); }
         
         .badge-nota {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            background: rgba(46, 204, 113, 0.1); color: var(--primary); padding: 4px 10px;
+            border-radius: 6px; font-weight: bold; font-size: 0.95rem; border: 1px solid rgba(46, 204, 113, 0.2);
         }
 
-        /* Estilización del Control Deslizante (Slider) */
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
+        .slider-container { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--bg-input); border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; }
 
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: var(--bg-input);
-            border-radius: 5px;
-            outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Nota Destacada Global */
-        .nota-box {
-            text-align: center; 
-            background: #111;
-            border: 1px dashed var(--border-color);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
+        .nota-box { text-align: center; background: #111; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin: 20px 0; }
         .nota-destacada { font-size: 2rem; color: var(--primary); font-weight: 800; display: block; margin-top: 5px;}
 
-        /* Estados de carga/envío */
         .status { margin-top:15px; padding:14px; border-radius:10px; display:none; text-align: center; font-weight: bold; font-size: 0.95rem; }
         .status.success { background: rgba(46, 204, 113, 0.2); color: #5efc99; border: 1px solid var(--primary); }
         .status.error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #e74c3c; }
         .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
         .status.show { display:block; }
 
-        /* Historial y Ranking */
         .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
         .lista-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px;
+            border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
         }
-        .rank-number {
-            font-weight: bold;
-            color: var(--primary);
-            margin-right: 8px;
-        }
+        .rank-number { font-weight: bold; color: var(--primary); margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -231,14 +118,17 @@
         <div id="status" class="status"></div>
     </div>
 
-    <h2 class="seccion-title">🏆 Top Variedades (Ranking)</h2>
-    <div id="ranking"></div>
+    <h2 class="seccion-title">🏆 Top Variedades (Ranking General de la Nube)</h2>
+    <div id="ranking">
+        <div class="small" style="text-align:center; padding:20px; color:var(--primary);">⏳ Sincronizando ranking con Google Sheets...</div>
+    </div>
 
-    <h2 class="seccion-title">📜 Historial Reciente</h2>
+    <h2 class="seccion-title">📜 Mis últimas catas locales</h2>
     <div id="historial"></div>
 </div>
 
 <script>
+    // Tu URL de Google Apps Script
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
@@ -253,16 +143,12 @@
     ];
 
     let puntuaciones = {};
-    let catas = JSON.parse(localStorage.getItem("catas")) || [];
+    let catasLocales = JSON.parse(localStorage.getItem("catas")) || [];
 
     function iniciar() {
         const nom = document.getElementById("nombre").value.trim();
         const varid = document.getElementById("variedad").value.trim();
-        
-        if(!nom || !varid) {
-            alert("Por favor, introduce tu nombre y la variedad.");
-            return;
-        }
+        if(!nom || !varid) { alert("Por favor, introduce tu nombre y la variedad."); return; }
         
         document.getElementById("fase1").style.display = "none";
         document.getElementById("fase2").style.display = "block";
@@ -273,43 +159,30 @@
 
         criteriosLista.forEach(c => {
             puntuaciones[c[0]] = 5; 
-
             let bloque = document.createElement("div");
             bloque.className = "criterio-row";
-            
             bloque.innerHTML = `
                 <div class="criterio-header">
-                    <div>
-                        <h3>${c[0]}</h3>
-                        <div class="small">${c[1]}</div>
-                    </div>
+                    <div><h3>${c[0]}</h3><div class="small">${c[1]}</div></div>
                     <span class="badge-nota" id="val-${c[0]}">5</span>
                 </div>
-                <div class="slider-container">
-                    <input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}">
-                </div>
+                <div class="slider-container"><input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}"></div>
             `;
-            
             criteriosDiv.appendChild(bloque);
 
-            const slider = bloque.querySelector(`#slider-${c[0]}`);
-            slider.addEventListener('input', (e) => {
+            bloque.querySelector(`#slider-${c[0]}`).addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
                 document.getElementById(`val-${c[0]}`).textContent = val;
                 puntuaciones[c[0]] = val;
                 calcular();
             });
         });
-
         calcular();
     }
 
     function calcular() {
         let total = 0, pesoTotal = 0;
-        for(let k in puntuaciones) { 
-            total += puntuaciones[k] * pesos[k]; 
-            pesoTotal += pesos[k]; 
-        }
+        for(let k in puntuaciones) { total += puntuaciones[k] * pesos[k]; pesoTotal += pesos[k]; }
         let nota = pesoTotal > 0 ? (total / pesoTotal).toFixed(2) : "0.00";
         document.getElementById("notaFinal").textContent = nota;
         return nota;
@@ -323,18 +196,16 @@
         const nuevaCata = {
             fecha: new Date().toLocaleString('es-ES'),
             nombre: document.getElementById("nombre").value.trim(),
-            variedad: document.getElementById("variedad").value.trim(), // Se guarda tal cual el usuario la escribió para el Drive
+            variedad: document.getElementById("variedad").value.trim(),
             precio: document.getElementById("precio").value || "0",
             nota: calcular(),
             comentarios: document.getElementById("comentarios").value,
             ...puntuaciones 
         };
 
-        catas.unshift(nuevaCata);
-        localStorage.setItem("catas", JSON.stringify(catas));
-        
-        renderTodo();
-
+        catasLocales.unshift(nuevaCata);
+        localStorage.setItem("catas", JSON.stringify(catasLocales));
+        renderHistorial();
         mostrarStatus("⏳ Conectando con Google Sheets...", "info");
 
         fetch(GOOGLE_SHEETS_URL, {
@@ -345,9 +216,7 @@
         })
         .then(() => {
             mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
-            setTimeout(() => {
-                location.reload();
-            }, 2500);
+            setTimeout(() => { location.reload(); }, 2000);
         })
         .catch(err => {
             console.error(err);
@@ -363,22 +232,15 @@
         statusDiv.className = "status show " + tipo;
     }
 
-    // Función auxiliar para poner la primera letra de cada palabra en mayúscula
     function capitalizarTexto(texto) {
-        return texto.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-    }
-
-    function renderTodo() {
-        renderHistorial();
-        renderRanking();
+        if (!texto) return "";
+        return texto.trim().toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
     }
 
     function renderHistorial() {
         const historialDiv = document.getElementById("historial");
         historialDiv.innerHTML = "";
-        
-        // Muestra las últimas 5 catas individuales
-        catas.slice(0, 5).forEach(c => {
+        catasLocales.slice(0, 5).forEach(c => {
             let item = document.createElement("div");
             item.className = "lista-item";
             item.innerHTML = `
@@ -392,16 +254,36 @@
         });
     }
 
-    function renderRanking() {
+    // NUEVA FUNCIÓN: Descarga los datos reales de tu Google Sheets para armar el ranking global
+    function cargarRankingDesdeNube() {
+        // Hacemos una petición GET a tu Web App de Google
+        fetch(GOOGLE_SHEETS_URL)
+        .then(response => response.json())
+        .then(data => {
+            procesarYMostrarRanking(data);
+        })
+        .catch(err => {
+            console.error("Error al leer de Google Sheets:", err);
+            // Si falla la red o tu script de Google no soporta GET, usa los datos locales como respaldo
+            procesarYMostrarRanking(catasLocales);
+        });
+    }
+
+    function procesarYMostrarRanking(listaCatas) {
         const rankingDiv = document.getElementById("ranking");
         rankingDiv.innerHTML = "";
 
-        // Agrupamos las catas por variedad ignorando mayúsculas/minúsculas
+        if (!listaCatas || listaCatas.length === 0) {
+            rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos en la nube para el ranking.</div>";
+            return;
+        }
+
         let variedadesAgrupadas = {};
 
-        catas.forEach(c => {
+        listaCatas.forEach(c => {
             if (!c.variedad) return;
-            // Clave única en minúsculas para evitar duplicados
+            
+            // KEY ÚNICA: Forzamos minúsculas y eliminamos espacios fantasmas
             let clave = c.variedad.trim().toLowerCase(); 
             
             if (!variedadesAgrupadas[clave]) {
@@ -415,26 +297,21 @@
             variedadesAgrupadas[clave].totalCatas += 1;
         });
 
-        // Convertimos el objeto a un Array para poder ordenarlo
+        // Convertir a Array y ordenar
         let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
             let datos = variedadesAgrupadas[clave];
             return {
-                nombre: capitalizarTexto(datos.nombreOriginal), // Formato limpio para pantalla
+                nombre: capitalizarTexto(datos.nombreOriginal),
                 promedio: (datos.sumaNotas / datos.totalCatas).toFixed(2),
                 totalCatas: datos.totalCatas
             };
         });
 
-        // Ordenamos de mayor nota a menor nota
+        // Ordenar de mayor a menor nota
         rankingArray.sort((a, b) => b.promedio - a.promedio);
 
-        // Cortamos para mostrar hasta 25 variedades (Modifica el 25 si quieres más o menos)
-        let topVariedades = rankingArray.slice(0, 25); 
-
-        if (topVariedades.length === 0) {
-            rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos para mostrar el ranking todavía.</div>";
-            return;
-        }
+        // LÍMITE: Muestra hasta 40 variedades en lista sin problemas
+        let topVariedades = rankingArray.slice(0, 40); 
 
         topVariedades.forEach((itemData, index) => {
             let item = document.createElement("div");
@@ -444,7 +321,7 @@
                     <strong style="font-size:1.1rem; color:#fff;">
                         <span class="rank-number">#${index + 1}</span>${itemData.nombre}
                     </strong>
-                    <div class="small" style="margin-top:2px;">${itemData.totalCatas} ${itemData.totalCatas === 1 ? 'cata' : 'catas'} registrada(s)</div>
+                    <div class="small" style="margin-top:2px;">${itemData.totalCatas} cata(s) en total</div>
                 </div>
                 <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px; background: rgba(46, 204, 113, 0.2);">${itemData.promedio}</span>
             `;
@@ -452,8 +329,9 @@
         });
     }
 
-    // Inicializar renders al cargar la página
-    renderTodo();
+    // Inicialización al abrir la app
+    renderHistorial();
+    cargarRankingDesdeNube();
 </script>
 </body>
 </html>
