@@ -1,379 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cata PRO - Sistema de Registro</title>
-    <style>
-        :root {
-            --primary: #2ecc71;
-            --primary-hover: #27ae60;
-            --bg-main: #0d0d0d;
-            --bg-card: #181818;
-            --bg-input: #252525;
-            --border-color: #2a2a2a;
-            --text-main: #f5f5f5;
-            --text-muted: #a0a0a0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cata PRO</title>
 
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            padding: 20px; 
-            line-height: 1.6;
-            margin: 0;
-        }
-        
-        .container { max-width: 650px; margin: auto; padding-bottom: 5px; }
-        
-        .card { 
-            background: var(--bg-card); 
-            padding: 24px; 
-            border-radius: 16px; 
-            margin-top: 20px; 
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            transition: all 0.3s ease;
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: var(--primary); 
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-        }
-        
-        h2 { 
-            font-size: 1.4rem;
-            color: #fff;
-            margin-top: 0; 
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        h3 { font-size: 1.1rem; margin: 0 0 4px 0; color: #fff; }
+<style>
+body { font-family: Arial; background:#111; color:#fff; padding:20px; }
+.container { max-width:700px; margin:auto; }
 
-        input[type="text"], input[type="number"], textarea { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 10px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-            box-sizing: border-box; 
-            background: var(--bg-input); 
-            color: #fff; 
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
-        }
+.card { background:#222; padding:15px; border-radius:10px; margin-top:15px; }
 
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 20px; 
-            border-radius: 10px; 
-            border: none; 
-            box-sizing: border-box; 
-            background: var(--primary); 
-            color: #051a0e; 
-            font-weight: bold; 
-            font-size: 1.05rem;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-        }
-        
-        button:hover { 
-            background: var(--primary-hover); 
-            transform: translateY(-1px); 
-        }
-        
-        button:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-            transform: none;
-        }
+input, textarea, button {
+width:100%; padding:10px; margin-top:5px; border-radius:8px; border:none;
+}
 
-        /* Contenedor del Criterio */
-        .criterio-row {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .criterio-row:last-child { border-bottom: none; }
-        
-        .criterio-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 8px;
-        }
+button { background:#2ecc71; color:#000; font-weight:bold; }
 
-        .small { font-size: 0.88em; color: var(--text-muted); }
-        
-        .badge-nota {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            border: 1px solid rgba(46, 204, 113, 0.2);
-        }
+.rating { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
 
-        /* Estilización del Control Deslizante (Slider) */
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
+.rating button {
+flex:1 0 18%;
+background:#333; color:#fff;
+}
 
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: var(--bg-input);
-            border-radius: 5px;
-            outline: none;
-        }
+.rating button.active { background:#2ecc71; color:#000; }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
+.small { font-size:0.8em; color:#aaa; }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Nota Destacada Global */
-        .nota-box {
-            text-align: center; 
-            background: #111;
-            border: 1px dashed var(--border-color);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-        .nota-destacada { font-size: 2rem; color: var(--primary); font-weight: 800; display: block; margin-top: 5px;}
-
-        /* Estados de carga/envío */
-        .status { margin-top:15px; padding:14px; border-radius:10px; display:none; text-align: center; font-weight: bold; font-size: 0.95rem; }
-        .status.success { background: rgba(46, 204, 113, 0.2); color: #5efc99; border: 1px solid var(--primary); }
-        .status.error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #e74c3c; }
-        .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
-        .status.show { display:block; }
-
-        /* Historial */
-        .historial-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
-        .historial-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-    </style>
+.status { margin-top:10px; padding:10px; border-radius:8px; display:none; }
+.status.success { background:#2ecc71; color:#000; }
+.status.error { background:#e74c3c; color:#fff; }
+.status.show { display:block; }
+</style>
 </head>
+
 <body>
-
 <div class="container">
-    <h1>🌿 Cata PRO</h1>
 
-    <div class="card" id="fase1">
-        <h2>📋 Paso 1: Información</h2>
-        <input id="nombre" type="text" placeholder="Tu nombre / Catador">
-        <input id="variedad" type="text" placeholder="Nombre de la Variedad">
-        <button onclick="iniciar()">Empezar cata</button>
-    </div>
+<h1>ðŸŒ¿ Cata PRO</h1>
 
-    <div class="card" id="fase2" style="display: none;">
-        <h2>📊 Paso 2: Evaluación</h2>
-        <div id="criterios"></div>
+<div class="card" id="fase1" style="display: block;">
+<h2>Fase 1</h2>
+<input id="nombre" placeholder="Tu nombre">
+<input id="variedad" placeholder="Variedad">
+<input id="precio" type="number" placeholder="Precio (â‚¬)">
+<button onclick="iniciar()">Empezar cata</button>
+</div>
 
-        <div style="margin-top:25px;">
-            <h3>💬 Comentarios adicionales</h3>
-            <textarea id="comentarios" rows="3" placeholder="Notas sobre el sabor, ceniza, curado..."></textarea>
-            
-            <h3 style="margin-top:20px;">💰 Valoración económica</h3>
-            <input id="precio" type="number" placeholder="¿Cuánto pagarías por g? (€)">
-        </div>
+<div class="card" id="fase2" style="display: none;">
+<h2>Fase 2</h2>
+<div id="criterios"></div>
 
-        <div class="nota-box">
-            <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nota Final Estimada</span>
-            <span id="notaFinal" class="nota-destacada">5.00</span>
-        </div>
+<textarea id="comentarios" placeholder="Notas..."></textarea>
 
-        <button id="btnGuardar" onclick="guardar()">Finalizar y Guardar en Drive</button>
-        <div id="status" class="status"></div>
-    </div>
+<h3>Nota final: <span id="notaFinal">0</span></h3>
 
-    <h2 class="historial-title">📜 Historial Reciente</h2>
-    <div id="historial"></div>
+<button onclick="guardar()">Guardar cata</button>
+<div id="status" class="status"></div>
+</div>
+
+<h2>ðŸ“Š Historial</h2>
+<div id="historial"></div>
+
 </div>
 
 <script>
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
-    const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
-    const criteriosLista = [
-        ["Aspecto", "Visual, resina, densidad de tricomas"],
-        ["Olor", "Intensidad y perfil aromático en seco"],
-        ["Olor tras grinder", "Explosión de aromas al picar"],
-        ["Sabor", "Fidelidad al olor y limpieza en boca"],
-        ["Punch", "Rapidez del primer impacto"],
-        ["Pegada", "Potencia máxima alcanzada"],
-        ["Efecto", "Calidad y duración de la experiencia"]
-    ];
+// URL de Google Apps Script
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyfGQNX05gQbj0DI6OXGcuLBprjDd9FnwjsukfItYIKdSr37dQzBMeBFb8VSyNn28mW0w/exec";
 
-    let puntuaciones = {};
-    let catas = JSON.parse(localStorage.getItem("catas")) || [];
+const pesos = {
+"Aspecto":1,
+"Olor":1.5,
+"Olor tras grinder":1.5,
+"Sabor":2,
+"Punch":2,
+"Pegada":2,
+"Efecto":2
+};
 
-    function iniciar() {
-        const nom = document.getElementById("nombre").value.trim();
-        const varid = document.getElementById("variedad").value.trim();
-        
-        if(!nom || !varid) {
-            alert("Por favor, introduce tu nombre y la variedad.");
-            return;
-        }
-        
-        document.getElementById("fase1").style.display = "none";
-        document.getElementById("fase2").style.display = "block";
-        
-        const criteriosDiv = document.getElementById("criterios");
-        criteriosDiv.innerHTML = "";
-        puntuaciones = {};
+const criteriosLista = [
+["Aspecto","Visual, tricomas, calidad general"],
+["Olor","Aroma en crudo"],
+["Olor tras grinder","Aroma al triturar"],
+["Sabor","Sabor al fumar"],
+["Punch","Potencia inmediata"],
+["Pegada","Efecto posterior"],
+["Efecto","DuraciÃ³n del efecto"]
+];
 
-        criteriosLista.forEach(c => {
-            // Por defecto los sliders inician al centro (5)
-            puntuaciones[c[0]] = 5; 
+let puntuaciones = {};
+let catas = JSON.parse(localStorage.getItem("catas")) || [];
 
-            let bloque = document.createElement("div");
-            bloque.className = "criterio-row";
-            
-            bloque.innerHTML = `
-                <div class="criterio-header">
-                    <div>
-                        <h3>${c[0]}</h3>
-                        <div class="small">${c[1]}</div>
-                    </div>
-                    <span class="badge-nota" id="val-${c[0]}">5</span>
-                </div>
-                <div class="slider-container">
-                    <input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}">
-                </div>
-            `;
-            
-            criteriosDiv.appendChild(bloque);
+// referencias DOM seguras
+const fase1 = document.getElementById("fase1");
+const fase2 = document.getElementById("fase2");
+const criteriosDiv = document.getElementById("criterios");
+const historialDiv = document.getElementById("historial");
 
-            // Escuchar el movimiento del slider en tiempo real
-            const slider = bloque.querySelector(`#slider-${c[0]}`);
-            slider.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value);
-                document.getElementById(`val-${c[0]}`).textContent = val;
-                puntuaciones[c[0]] = val;
-                calcular();
-            });
-        });
+const nombreInput = document.getElementById("nombre");
+const variedadInput = document.getElementById("variedad");
+const precioInput = document.getElementById("precio");
+const comentariosInput = document.getElementById("comentarios");
+const notaFinalSpan = document.getElementById("notaFinal");
+const statusDiv = document.getElementById("status");
 
-        calcular(); // Cálculo inicial con los valores base (5)
-    }
+// crear botones
+function crearBotones(contenedor, key){
+for(let i=1;i<=10;i++){
+let b=document.createElement("button");
+b.textContent=i;
 
-    function calcular() {
-        let total = 0, pesoTotal = 0;
-        for(let k in puntuaciones) { 
-            total += puntuaciones[k] * pesos[k]; 
-            pesoTotal += pesos[k]; 
-        }
-        let nota = pesoTotal > 0 ? (total / pesoTotal).toFixed(2) : "0.00";
-        document.getElementById("notaFinal").textContent = nota;
-        return nota;
-    }
+b.onclick=()=>{
+[...contenedor.children].forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
+puntuaciones[key]=i;
+calcular();
+};
 
-    function guardar() {
-        const btn = document.getElementById("btnGuardar");
-        btn.disabled = true;
-        btn.innerText = "Enviando datos...";
+contenedor.appendChild(b);
+}
+}
 
-        const nuevaCata = {
-            fecha: new Date().toLocaleString('es-ES'),
-            nombre: document.getElementById("nombre").value,
-            variedad: document.getElementById("variedad").value,
-            precio: document.getElementById("precio").value || "0",
-            nota: calcular(),
-            comentarios: document.getElementById("comentarios").value,
-            ...puntuaciones 
-        };
+// iniciar fase 2
+function iniciar(){
+if(!nombreInput.value || !variedadInput.value){
+alert("Completa nombre y variedad");
+return;
+}
 
-        catas.unshift(nuevaCata);
-        localStorage.setItem("catas", JSON.stringify(catas));
-        renderHistorial();
+fase1.style.display="none";
+fase2.style.display="block";
+criteriosDiv.innerHTML="";
+puntuaciones={};
 
-        mostrarStatus("⏳ Conectando con Google Sheets...", "info");
+criteriosLista.forEach(c=>{
+let bloque=document.createElement("div");
 
-        fetch(GOOGLE_SHEETS_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(nuevaCata)
-        })
-        .then(() => {
-            mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
-            setTimeout(() => {
-                location.reload();
-            }, 2500);
-        })
-        .catch(err => {
-            console.error(err);
-            mostrarStatus("❌ Error al enviar. Se guardó localmente.", "error");
-            btn.disabled = false;
-            btn.innerText = "Reintentar Guardar";
-        });
-    }
+let titulo=document.createElement("h3");
+titulo.textContent=c[0];
 
-    function mostrarStatus(mensaje, tipo) {
-        const statusDiv = document.getElementById("status");
-        statusDiv.textContent = mensaje;
-        statusDiv.className = "status show " + tipo;
-    }
+let desc=document.createElement("div");
+desc.className="small";
+desc.textContent=c[1];
 
-    function renderHistorial() {
-        const historialDiv = document.getElementById("historial");
-        historialDiv.innerHTML = "";
-        catas.slice(0, 5).forEach(c => {
-            let item = document.createElement("div");
-            item.className = "historial-item";
-            item.innerHTML = `
-                <div>
-                    <strong style="font-size:1.1rem; color:#fff;">${c.variedad}</strong>
-                    <div class="small" style="margin-top:2px;">${c.fecha}</div>
-                </div>
-                <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px;">${c.nota}</span>
-            `;
-            historialDiv.appendChild(item);
-        });
-    }
+let rating=document.createElement("div");
+rating.className="rating";
 
-    renderHistorial();
+bloque.appendChild(titulo);
+bloque.appendChild(desc);
+bloque.appendChild(rating);
+
+criteriosDiv.appendChild(bloque);
+
+crearBotones(rating, c[0]);
+});
+}
+
+// calcular nota
+function calcular(){
+let total=0, pesoTotal=0;
+
+for(let k in puntuaciones){
+total += puntuaciones[k]*pesos[k];
+pesoTotal += pesos[k];
+}
+
+if(pesoTotal===0) return 0;
+
+let nota = (total/pesoTotal).toFixed(2);
+notaFinalSpan.textContent = nota;
+return nota;
+}
+
+// mostrar estado
+function mostrarStatus(mensaje, tipo){
+statusDiv.textContent = mensaje;
+statusDiv.className = "status show " + tipo;
+setTimeout(() => {
+  statusDiv.classList.remove("show");
+}, 3000);
+}
+
+// guardar
+function guardar(){
+
+if(Object.keys(puntuaciones).length !== criteriosLista.length){
+alert("Completa todas las puntuaciones");
+return;
+}
+
+let nota = calcular();
+
+let nueva = {
+nombre: nombreInput.value,
+variedad: variedadInput.value,
+precio: precioInput.value,
+puntos: {...puntuaciones},
+nota: nota,
+comentarios: comentariosInput.value,
+fecha: new Date().toLocaleString()
+};
+
+catas.push(nueva);
+
+// Guardar en localStorage
+localStorage.setItem("catas", JSON.stringify(catas));
+
+// Enviar a Google Sheets
+enviarAGoogleSheets(nueva);
+
+render();
+reset();
+}
+
+// enviar a Google Sheets
+function enviarAGoogleSheets(cata){
+mostrarStatus("Guardando...", "");
+
+fetch(GOOGLE_SHEETS_URL, {
+  method: 'POST',
+  mode: 'no-cors',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(cata)
+})
+.then(response => {
+  mostrarStatus("âœ“ Guardado en Google Sheets", "success");
+})
+.catch(error => {
+  console.error("Error al enviar a Google Sheets:", error);
+  mostrarStatus("âœ“ Guardado localmente (sin conexiÃ³n a Sheets)", "success");
+});
+}
+
+// render historial
+function render(){
+historialDiv.innerHTML="";
+
+catas.forEach((c,i)=>{
+let div=document.createElement("div");
+div.className="card";
+
+let detalle="";
+for(let k in c.puntos){
+detalle += `${k}: ${c.puntos[k]}<br>`;
+}
+
+div.innerHTML=`
+<strong>#${i+1} ${c.variedad}</strong><br>
+Catador: ${c.nombre}<br>
+Precio: â‚¬${c.precio}<br>
+Nota: ${c.nota}<br>
+
+<details>
+<summary>Ver detalles</summary>
+${detalle}
+<br><br>${c.comentarios || ""}
+<br><br><small>${c.fecha}</small>
+</details>
+`;
+
+historialDiv.appendChild(div);
+});
+}
+
+// reset
+function reset(){
+fase1.style.display="block";
+fase2.style.display="none";
+
+criteriosDiv.innerHTML="";
+puntuaciones={};
+
+nombreInput.value="";
+variedadInput.value="";
+precioInput.value="";
+comentariosInput.value="";
+notaFinalSpan.textContent="0";
+}
+
+// cargar historial al abrir
+render();
+
 </script>
+
 </body>
 </html>
