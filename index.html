@@ -14,6 +14,10 @@
             --border-color: #2a2a2a;
             --text-main: #f5f5f5;
             --text-muted: #a0a0a0;
+            /* Colores de podio */
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
         }
 
         body { 
@@ -78,11 +82,59 @@
         .status.show { display:block; }
 
         .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
+        
         .lista-item {
             background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px;
             border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
+            border-left: 5px solid transparent; transition: all 0.4s ease;
         }
         .rank-number { font-weight: bold; color: var(--primary); margin-right: 8px; }
+
+        /* --- NUEVOS ESTILOS PARA EL PODIO (TOP 3) --- */
+        .podium-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+            height: 200px;
+        }
+        .podium-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            flex: 1;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+            border: 1px solid var(--border-color);
+        }
+        .podium-card.rank-1 { order: 2; height: 170px; border-top: 4px solid var(--gold); background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, var(--bg-card) 100%); }
+        .podium-card.rank-2 { order: 1; height: 145px; border-top: 4px solid var(--silver); }
+        .podium-card.rank-3 { order: 3; height: 125px; border-top: 4px solid var(--bronze); }
+        
+        .podium-badge { font-size: 1.8rem; display: block; margin-bottom: 5px; }
+        .podium-title { font-weight: bold; font-size: 1rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .podium-score { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-top: 5px; display: block; }
+        .podium-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* --- COLORES DE BORDES DINÁMICOS POR SECCIONES --- */
+        .border-grupo-1 { border-left-color: #3498db !important; } /* Puestos 4-10: Azul */
+        .border-grupo-2 { border-left-color: #2ecc71 !important; } /* Puestos 11-20: Verde */
+        .border-grupo-3 { border-left-color: #f1c40f !important; } /* Puestos 21-30: Amarillo */
+        .border-grupo-4 { border-left-color: #e67e22 !important; } /* Puestos 31-33: Naranja */
+
+        /* --- ANIMACIÓN DE REACCIÓN (Dinamismo de refresco) --- */
+        .react-flash {
+            animation: pulseFlash 0.6s ease-out;
+        }
+        @keyframes pulseFlash {
+            0% { background-color: #252525; transform: scale(1); }
+            50% { background-color: #2a3c30; transform: scale(1.01); }
+            100% { background-color: var(--bg-card); transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -119,6 +171,9 @@
     </div>
 
     <h2 class="seccion-title">🏆 Top Variedades (Ranking General de la Nube)</h2>
+    
+    <div class="podium-container" id="podiumRanking"></div>
+    
     <div id="ranking">
         <div class="small" style="text-align:center; padding:20px; color:var(--primary);">⏳ Sincronizando ranking con Google Sheets...</div>
     </div>
@@ -128,7 +183,6 @@
 </div>
 
 <script>
-    // Tu URL de Google Apps Script
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
@@ -254,9 +308,7 @@
         });
     }
 
-    // NUEVA FUNCIÓN: Descarga los datos reales de tu Google Sheets para armar el ranking global
     function cargarRankingDesdeNube() {
-        // Hacemos una petición GET a tu Web App de Google
         fetch(GOOGLE_SHEETS_URL)
         .then(response => response.json())
         .then(data => {
@@ -264,14 +316,17 @@
         })
         .catch(err => {
             console.error("Error al leer de Google Sheets:", err);
-            // Si falla la red o tu script de Google no soporta GET, usa los datos locales como respaldo
             procesarYMostrarRanking(catasLocales);
         });
     }
 
+    // MODIFICADO: Nueva lógica de Podio (3) + Lista de Variedades (30) + Bordes de color
     function procesarYMostrarRanking(listaCatas) {
         const rankingDiv = document.getElementById("ranking");
+        const podiumDiv = document.getElementById("podiumRanking");
+        
         rankingDiv.innerHTML = "";
+        podiumDiv.innerHTML = "";
 
         if (!listaCatas || listaCatas.length === 0) {
             rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos en la nube para el ranking.</div>";
@@ -282,10 +337,7 @@
 
         listaCatas.forEach(c => {
             if (!c.variedad) return;
-            
-            // KEY ÚNICA: Forzamos minúsculas y eliminamos espacios fantasmas
             let clave = c.variedad.trim().toLowerCase(); 
-            
             if (!variedadesAgrupadas[clave]) {
                 variedadesAgrupadas[clave] = {
                     nombreOriginal: c.variedad.trim(),
@@ -297,7 +349,6 @@
             variedadesAgrupadas[clave].totalCatas += 1;
         });
 
-        // Convertir a Array y ordenar
         let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
             let datos = variedadesAgrupadas[clave];
             return {
@@ -307,19 +358,51 @@
             };
         });
 
-        // Ordenar de mayor a menor nota
+        // Ordenar de mayor a menor
         rankingArray.sort((a, b) => b.promedio - a.promedio);
 
-        // LÍMITE: Muestra hasta 40 variedades en lista sin problemas
-        let topVariedades = rankingArray.slice(0, 40); 
+        // --- 1. RENDERIZAR EL PODIO (LOS 3 PRIMEROS) ---
+        const coronas = ["👑", "🥈", "🥉"];
+        for (let i = 0; i < 3; i++) {
+            if (rankingArray[i]) {
+                let itemData = rankingArray[i];
+                let card = document.createElement("div");
+                card.className = `podium-card rank-${i+1} react-flash`;
+                card.innerHTML = `
+                    <span class="podium-badge">${coronas[i]}</span>
+                    <div class="podium-title">${itemData.nombre}</div>
+                    <span class="podium-score">${itemData.promedio}</span>
+                    <div class="podium-sub">${itemData.totalCatas} cata(s)</div>
+                `;
+                podiumDiv.appendChild(card);
+            }
+        }
 
-        topVariedades.forEach((itemData, index) => {
+        // --- 2. RENDERIZAR LAS OTRAS 30 VARIEDADES ---
+        // Tomamos desde el puesto 4 (índice 3) hasta completar las 30 variedades más (puesto 33 máximo)
+        let lasOtras30 = rankingArray.slice(3, 33);
+
+        lasOtras30.forEach((itemData, index) => {
+            let puestoReal = index + 4; // Porque empezamos en el 4º puesto
             let item = document.createElement("div");
-            item.className = "lista-item";
+            
+            // Asignación de color de borde cada 10 puestos globales
+            let claseBorde = "";
+            if (puestoReal <= 10) {
+                claseBorde = "border-grupo-1"; // Puestos 4 al 10 (Azul)
+            } else if (puestoReal <= 20) {
+                claseBorde = "border-grupo-2"; // Puestos 11 al 20 (Verde)
+            } else if (puestoReal <= 30) {
+                claseBorde = "border-grupo-3"; // Puestos 21 al 30 (Amarillo)
+            } else {
+                claseBorde = "border-grupo-4"; // Puestos 31 al 33 (Naranja)
+            }
+
+            item.className = `lista-item ${claseBorde} react-flash`;
             item.innerHTML = `
                 <div>
                     <strong style="font-size:1.1rem; color:#fff;">
-                        <span class="rank-number">#${index + 1}</span>${itemData.nombre}
+                        <span class="rank-number">#${puestoReal}</span>${itemData.nombre}
                     </strong>
                     <div class="small" style="margin-top:2px;">${itemData.totalCatas} cata(s) en total</div>
                 </div>
@@ -332,6 +415,11 @@
     // Inicialización al abrir la app
     renderHistorial();
     cargarRankingDesdeNube();
+
+    // NUEVO: El sistema reacciona, vuelve a consultar la nube y reordena de forma dinámica cada 2 minutos (120000ms)
+    setInterval(() => {
+        cargarRankingDesdeNube();
+    }, 120000);
 </script>
 </body>
 </html>
