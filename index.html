@@ -1,425 +1,674 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Cata PRO - Sistema de Registro</title>
+
     <style>
+
         :root {
+
             --primary: #2ecc71;
+
             --primary-hover: #27ae60;
+
             --bg-main: #0d0d0d;
+
             --bg-card: #181818;
+
             --bg-input: #252525;
+
             --border-color: #2a2a2a;
+
             --text-main: #f5f5f5;
+
             --text-muted: #a0a0a0;
-            /* Colores de podio */
-            --gold: #ffd700;
-            --silver: #c0c0c0;
-            --bronze: #cd7f32;
+
         }
+
+
 
         body { 
+
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+
             background: var(--bg-main); 
+
             color: var(--text-main); 
+
             padding: 20px; 
+
             line-height: 1.6;
+
             margin: 0;
+
         }
+
         
+
         .container { max-width: 650px; margin: auto; padding-bottom: 5px; }
+
         
+
         .card { 
+
             background: var(--bg-card); 
+
             padding: 24px; 
+
             border-radius: 16px; 
+
             margin-top: 20px; 
+
             border: 1px solid var(--border-color);
+
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+
         }
+
         
+
         h1 { text-align: center; color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
+
         h2 { font-size: 1.4rem; color: #fff; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
         h3 { font-size: 1.1rem; margin: 0 0 4px 0; color: #fff; }
 
+
+
         input[type="text"], input[type="number"], textarea { 
+
             width: 100%; padding: 14px; margin-top: 10px; border-radius: 10px; 
+
             border: 1px solid var(--border-color); box-sizing: border-box; 
+
             background: var(--bg-input); color: #fff; font-size: 1rem;
+
         }
+
         
+
         button { 
+
             width: 100%; padding: 14px; margin-top: 20px; border-radius: 10px; border: none; 
+
             box-sizing: border-box; background: var(--primary); color: #051a0e; 
+
             font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: all 0.2s ease; 
+
         }
+
         
+
         button:disabled { background: #444; color: #888; cursor: not-allowed; }
 
+
+
         .criterio-row { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
+
         .criterio-row:last-child { border-bottom: none; }
+
         .criterio-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+
         .small { font-size: 0.88em; color: var(--text-muted); }
+
         
+
         .badge-nota {
+
             background: rgba(46, 204, 113, 0.1); color: var(--primary); padding: 4px 10px;
+
             border-radius: 6px; font-weight: bold; font-size: 0.95rem; border: 1px solid rgba(46, 204, 113, 0.2);
+
         }
+
+
 
         .slider-container { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+
         input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--bg-input); border-radius: 5px; outline: none; }
+
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; }
 
+
+
         .nota-box { text-align: center; background: #111; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin: 20px 0; }
+
         .nota-destacada { font-size: 2rem; color: var(--primary); font-weight: 800; display: block; margin-top: 5px;}
 
+
+
         .status { margin-top:15px; padding:14px; border-radius:10px; display:none; text-align: center; font-weight: bold; font-size: 0.95rem; }
+
         .status.success { background: rgba(46, 204, 113, 0.2); color: #5efc99; border: 1px solid var(--primary); }
+
         .status.error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #e74c3c; }
+
         .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
+
         .status.show { display:block; }
 
+
+
         .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
-        
+
         .lista-item {
+
             background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px;
+
             border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
-            border-left: 5px solid transparent; transition: all 0.4s ease;
+
         }
+
         .rank-number { font-weight: bold; color: var(--primary); margin-right: 8px; }
 
-        /* --- NUEVOS ESTILOS PARA EL PODIO (TOP 3) --- */
-        .podium-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 12px;
-            margin-top: 20px;
-            margin-bottom: 25px;
-            height: 200px;
-        }
-        .podium-card {
-            background: var(--bg-card);
-            border-radius: 14px;
-            padding: 15px 10px;
-            text-align: center;
-            flex: 1;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.4s ease;
-            border: 1px solid var(--border-color);
-        }
-        .podium-card.rank-1 { order: 2; height: 170px; border-top: 4px solid var(--gold); background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, var(--bg-card) 100%); }
-        .podium-card.rank-2 { order: 1; height: 145px; border-top: 4px solid var(--silver); }
-        .podium-card.rank-3 { order: 3; height: 125px; border-top: 4px solid var(--bronze); }
-        
-        .podium-badge { font-size: 1.8rem; display: block; margin-bottom: 5px; }
-        .podium-title { font-weight: bold; font-size: 1rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .podium-score { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-top: 5px; display: block; }
-        .podium-sub { font-size: 0.75rem; color: var(--text-muted); }
-
-        /* --- COLORES DE BORDES DINÁMICOS POR SECCIONES --- */
-        .border-grupo-1 { border-left-color: #3498db !important; } /* Puestos 4-10: Azul */
-        .border-grupo-2 { border-left-color: #2ecc71 !important; } /* Puestos 11-20: Verde */
-        .border-grupo-3 { border-left-color: #f1c40f !important; } /* Puestos 21-30: Amarillo */
-        .border-grupo-4 { border-left-color: #e67e22 !important; } /* Puestos 31-33: Naranja */
-
-        /* --- ANIMACIÓN DE REACCIÓN (Dinamismo de refresco) --- */
-        .react-flash {
-            animation: pulseFlash 0.6s ease-out;
-        }
-        @keyframes pulseFlash {
-            0% { background-color: #252525; transform: scale(1); }
-            50% { background-color: #2a3c30; transform: scale(1.01); }
-            100% { background-color: var(--bg-card); transform: scale(1); }
-        }
     </style>
+
 </head>
+
 <body>
 
+
+
 <div class="container">
+
     <h1>🌿 Cata PRO</h1>
 
+
+
     <div class="card" id="fase1">
+
         <h2>📋 Paso 1: Información</h2>
+
         <input id="nombre" type="text" placeholder="Tu nombre / Catador">
+
         <input id="variedad" type="text" placeholder="Nombre de la Variedad">
+
         <button onclick="iniciar()">Empezar cata</button>
+
     </div>
+
+
 
     <div class="card" id="fase2" style="display: none;">
+
         <h2>📊 Paso 2: Evaluación</h2>
+
         <div id="criterios"></div>
 
+
+
         <div style="margin-top:25px;">
+
             <h3>💬 Comentarios adicionales</h3>
+
             <textarea id="comentarios" rows="3" placeholder="Notas sobre el sabor, ceniza, curado..."></textarea>
+
             
+
             <h3 style="margin-top:20px;">💰 Valoración económica</h3>
+
             <input id="precio" type="number" placeholder="¿Cuánto pagarías por g? (€)">
+
         </div>
+
+
 
         <div class="nota-box">
+
             <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nota Final Estimada</span>
+
             <span id="notaFinal" class="nota-destacada">5.00</span>
+
         </div>
 
+
+
         <button id="btnGuardar" onclick="guardar()">Finalizar y Guardar en Drive</button>
+
         <div id="status" class="status"></div>
+
     </div>
+
+
 
     <h2 class="seccion-title">🏆 Top Variedades (Ranking General de la Nube)</h2>
-    
-    <div class="podium-container" id="podiumRanking"></div>
-    
+
     <div id="ranking">
+
         <div class="small" style="text-align:center; padding:20px; color:var(--primary);">⏳ Sincronizando ranking con Google Sheets...</div>
+
     </div>
 
+
+
     <h2 class="seccion-title">📜 Mis últimas catas locales</h2>
+
     <div id="historial"></div>
+
 </div>
 
+
+
 <script>
+
+    // Tu URL de Google Apps Script
+
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
 
+
+
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
+
     const criteriosLista = [
+
         ["Aspecto", "Visual, resina, densidad de tricomas"],
+
         ["Olor", "Intensidad y perfil aromático en seco"],
+
         ["Olor tras grinder", "Explosión de aromas al picar"],
+
         ["Sabor", "Fidelidad al olor y limpieza en boca"],
+
         ["Punch", "Rapidez del primer impacto"],
+
         ["Pegada", "Potencia máxima alcanzada"],
+
         ["Efecto", "Calidad y duración de la experiencia"]
+
     ];
 
+
+
     let puntuaciones = {};
+
     let catasLocales = JSON.parse(localStorage.getItem("catas")) || [];
 
+
+
     function iniciar() {
+
         const nom = document.getElementById("nombre").value.trim();
+
         const varid = document.getElementById("variedad").value.trim();
+
         if(!nom || !varid) { alert("Por favor, introduce tu nombre y la variedad."); return; }
+
         
+
         document.getElementById("fase1").style.display = "none";
+
         document.getElementById("fase2").style.display = "block";
+
         
+
         const criteriosDiv = document.getElementById("criterios");
+
         criteriosDiv.innerHTML = "";
+
         puntuaciones = {};
 
+
+
         criteriosLista.forEach(c => {
+
             puntuaciones[c[0]] = 5; 
+
             let bloque = document.createElement("div");
+
             bloque.className = "criterio-row";
+
             bloque.innerHTML = `
+
                 <div class="criterio-header">
+
                     <div><h3>${c[0]}</h3><div class="small">${c[1]}</div></div>
+
                     <span class="badge-nota" id="val-${c[0]}">5</span>
+
                 </div>
+
                 <div class="slider-container"><input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}"></div>
+
             `;
+
             criteriosDiv.appendChild(bloque);
 
+
+
             bloque.querySelector(`#slider-${c[0]}`).addEventListener('input', (e) => {
+
                 const val = parseInt(e.target.value);
+
                 document.getElementById(`val-${c[0]}`).textContent = val;
+
                 puntuaciones[c[0]] = val;
+
                 calcular();
+
             });
+
         });
+
         calcular();
+
     }
+
+
 
     function calcular() {
+
         let total = 0, pesoTotal = 0;
+
         for(let k in puntuaciones) { total += puntuaciones[k] * pesos[k]; pesoTotal += pesos[k]; }
+
         let nota = pesoTotal > 0 ? (total / pesoTotal).toFixed(2) : "0.00";
+
         document.getElementById("notaFinal").textContent = nota;
+
         return nota;
+
     }
+
+
 
     function guardar() {
+
         const btn = document.getElementById("btnGuardar");
+
         btn.disabled = true;
+
         btn.innerText = "Enviando datos...";
 
+
+
         const nuevaCata = {
+
             fecha: new Date().toLocaleString('es-ES'),
+
             nombre: document.getElementById("nombre").value.trim(),
+
             variedad: document.getElementById("variedad").value.trim(),
+
             precio: document.getElementById("precio").value || "0",
+
             nota: calcular(),
+
             comentarios: document.getElementById("comentarios").value,
+
             ...puntuaciones 
+
         };
 
+
+
         catasLocales.unshift(nuevaCata);
+
         localStorage.setItem("catas", JSON.stringify(catasLocales));
+
         renderHistorial();
+
         mostrarStatus("⏳ Conectando con Google Sheets...", "info");
 
+
+
         fetch(GOOGLE_SHEETS_URL, {
+
             method: "POST",
+
             mode: "no-cors",
+
             headers: { "Content-Type": "text/plain" },
+
             body: JSON.stringify(nuevaCata)
+
         })
+
         .then(() => {
+
             mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
+
             setTimeout(() => { location.reload(); }, 2000);
+
         })
+
         .catch(err => {
+
             console.error(err);
+
             mostrarStatus("❌ Error al enviar. Se guardó localmente.", "error");
+
             btn.disabled = false;
+
             btn.innerText = "Reintentar Guardar";
+
         });
+
     }
+
+
 
     function mostrarStatus(mensaje, tipo) {
+
         const statusDiv = document.getElementById("status");
+
         statusDiv.textContent = mensaje;
+
         statusDiv.className = "status show " + tipo;
+
     }
+
+
 
     function capitalizarTexto(texto) {
+
         if (!texto) return "";
+
         return texto.trim().toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+
     }
+
+
 
     function renderHistorial() {
+
         const historialDiv = document.getElementById("historial");
+
         historialDiv.innerHTML = "";
+
         catasLocales.slice(0, 5).forEach(c => {
+
             let item = document.createElement("div");
+
             item.className = "lista-item";
+
             item.innerHTML = `
+
                 <div>
+
                     <strong style="font-size:1.1rem; color:#fff;">${capitalizarTexto(c.variedad)}</strong>
+
                     <div class="small" style="margin-top:2px;">${c.fecha} - por ${c.nombre}</div>
+
                 </div>
+
                 <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px;">${c.nota}</span>
+
             `;
+
             historialDiv.appendChild(item);
+
         });
+
     }
+
+
+
+    // NUEVA FUNCIÓN: Descarga los datos reales de tu Google Sheets para armar el ranking global
 
     function cargarRankingDesdeNube() {
+
+        // Hacemos una petición GET a tu Web App de Google
+
         fetch(GOOGLE_SHEETS_URL)
+
         .then(response => response.json())
+
         .then(data => {
+
             procesarYMostrarRanking(data);
+
         })
+
         .catch(err => {
+
             console.error("Error al leer de Google Sheets:", err);
+
+            // Si falla la red o tu script de Google no soporta GET, usa los datos locales como respaldo
+
             procesarYMostrarRanking(catasLocales);
+
         });
+
     }
 
-    // MODIFICADO: Nueva lógica de Podio (3) + Lista de Variedades (30) + Bordes de color
+
+
     function procesarYMostrarRanking(listaCatas) {
+
         const rankingDiv = document.getElementById("ranking");
-        const podiumDiv = document.getElementById("podiumRanking");
-        
+
         rankingDiv.innerHTML = "";
-        podiumDiv.innerHTML = "";
+
+
 
         if (!listaCatas || listaCatas.length === 0) {
+
             rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos en la nube para el ranking.</div>";
+
             return;
+
         }
+
+
 
         let variedadesAgrupadas = {};
 
+
+
         listaCatas.forEach(c => {
+
             if (!c.variedad) return;
+
+            
+
+            // KEY ÚNICA: Forzamos minúsculas y eliminamos espacios fantasmas
+
             let clave = c.variedad.trim().toLowerCase(); 
+
+            
+
             if (!variedadesAgrupadas[clave]) {
+
                 variedadesAgrupadas[clave] = {
+
                     nombreOriginal: c.variedad.trim(),
+
                     sumaNotas: 0,
+
                     totalCatas: 0
+
                 };
+
             }
+
             variedadesAgrupadas[clave].sumaNotas += parseFloat(c.nota);
+
             variedadesAgrupadas[clave].totalCatas += 1;
+
         });
+
+
+
+        // Convertir a Array y ordenar
 
         let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
+
             let datos = variedadesAgrupadas[clave];
+
             return {
+
                 nombre: capitalizarTexto(datos.nombreOriginal),
+
                 promedio: (datos.sumaNotas / datos.totalCatas).toFixed(2),
+
                 totalCatas: datos.totalCatas
+
             };
+
         });
 
-        // Ordenar de mayor a menor
+
+
+        // Ordenar de mayor a menor nota
+
         rankingArray.sort((a, b) => b.promedio - a.promedio);
 
-        // --- 1. RENDERIZAR EL PODIO (LOS 3 PRIMEROS) ---
-        const coronas = ["👑", "🥈", "🥉"];
-        for (let i = 0; i < 3; i++) {
-            if (rankingArray[i]) {
-                let itemData = rankingArray[i];
-                let card = document.createElement("div");
-                card.className = `podium-card rank-${i+1} react-flash`;
-                card.innerHTML = `
-                    <span class="podium-badge">${coronas[i]}</span>
-                    <div class="podium-title">${itemData.nombre}</div>
-                    <span class="podium-score">${itemData.promedio}</span>
-                    <div class="podium-sub">${itemData.totalCatas} cata(s)</div>
-                `;
-                podiumDiv.appendChild(card);
-            }
-        }
 
-        // --- 2. RENDERIZAR LAS OTRAS 30 VARIEDADES ---
-        // Tomamos desde el puesto 4 (índice 3) hasta completar las 30 variedades más (puesto 33 máximo)
-        let lasOtras30 = rankingArray.slice(3, 33);
 
-        lasOtras30.forEach((itemData, index) => {
-            let puestoReal = index + 4; // Porque empezamos en el 4º puesto
+        // LÍMITE: Muestra hasta 40 variedades en lista sin problemas
+
+        let topVariedades = rankingArray.slice(0, 40); 
+
+
+
+        topVariedades.forEach((itemData, index) => {
+
             let item = document.createElement("div");
-            
-            // Asignación de color de borde cada 10 puestos globales
-            let claseBorde = "";
-            if (puestoReal <= 10) {
-                claseBorde = "border-grupo-1"; // Puestos 4 al 10 (Azul)
-            } else if (puestoReal <= 20) {
-                claseBorde = "border-grupo-2"; // Puestos 11 al 20 (Verde)
-            } else if (puestoReal <= 30) {
-                claseBorde = "border-grupo-3"; // Puestos 21 al 30 (Amarillo)
-            } else {
-                claseBorde = "border-grupo-4"; // Puestos 31 al 33 (Naranja)
-            }
 
-            item.className = `lista-item ${claseBorde} react-flash`;
+            item.className = "lista-item";
+
             item.innerHTML = `
+
                 <div>
+
                     <strong style="font-size:1.1rem; color:#fff;">
-                        <span class="rank-number">#${puestoReal}</span>${itemData.nombre}
+
+                        <span class="rank-number">#${index + 1}</span>${itemData.nombre}
+
                     </strong>
+
                     <div class="small" style="margin-top:2px;">${itemData.totalCatas} cata(s) en total</div>
+
                 </div>
+
                 <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px; background: rgba(46, 204, 113, 0.2);">${itemData.promedio}</span>
+
             `;
+
             rankingDiv.appendChild(item);
+
         });
+
     }
 
+
+
     // Inicialización al abrir la app
+
     renderHistorial();
+
     cargarRankingDesdeNube();
 
-    // NUEVO: El sistema reacciona, vuelve a consultar la nube y reordena de forma dinámica cada 2 minutos (120000ms)
-    setInterval(() => {
-        cargarRankingDesdeNube();
-    }, 120000);
 </script>
+
 </body>
-</html>
+
+</html> 
+
