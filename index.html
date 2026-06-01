@@ -179,9 +179,9 @@
         .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
         .status.show { display:block; }
 
-        /* Historial */
-        .historial-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
-        .historial-item {
+        /* Historial y Ranking */
+        .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
+        .lista-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             padding: 16px;
@@ -190,6 +190,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        .rank-number {
+            font-weight: bold;
+            color: var(--primary);
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -226,7 +231,10 @@
         <div id="status" class="status"></div>
     </div>
 
-    <h2 class="historial-title">📜 Historial Reciente</h2>
+    <h2 class="seccion-title">🏆 Top Variedades (Ranking)</h2>
+    <div id="ranking"></div>
+
+    <h2 class="seccion-title">📜 Historial Reciente</h2>
     <div id="historial"></div>
 </div>
 
@@ -264,7 +272,6 @@
         puntuaciones = {};
 
         criteriosLista.forEach(c => {
-            // Por defecto los sliders inician al centro (5)
             puntuaciones[c[0]] = 5; 
 
             let bloque = document.createElement("div");
@@ -285,7 +292,6 @@
             
             criteriosDiv.appendChild(bloque);
 
-            // Escuchar el movimiento del slider en tiempo real
             const slider = bloque.querySelector(`#slider-${c[0]}`);
             slider.addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
@@ -295,7 +301,7 @@
             });
         });
 
-        calcular(); // Cálculo inicial con los valores base (5)
+        calcular();
     }
 
     function calcular() {
@@ -316,8 +322,8 @@
 
         const nuevaCata = {
             fecha: new Date().toLocaleString('es-ES'),
-            nombre: document.getElementById("nombre").value,
-            variedad: document.getElementById("variedad").value,
+            nombre: document.getElementById("nombre").value.trim(),
+            variedad: document.getElementById("variedad").value.trim(), // Se guarda tal cual el usuario la escribió para el Drive
             precio: document.getElementById("precio").value || "0",
             nota: calcular(),
             comentarios: document.getElementById("comentarios").value,
@@ -326,7 +332,8 @@
 
         catas.unshift(nuevaCata);
         localStorage.setItem("catas", JSON.stringify(catas));
-        renderHistorial();
+        
+        renderTodo();
 
         mostrarStatus("⏳ Conectando con Google Sheets...", "info");
 
@@ -356,16 +363,28 @@
         statusDiv.className = "status show " + tipo;
     }
 
+    // Función auxiliar para poner la primera letra de cada palabra en mayúscula
+    function capitalizarTexto(texto) {
+        return texto.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+    }
+
+    function renderTodo() {
+        renderHistorial();
+        renderRanking();
+    }
+
     function renderHistorial() {
         const historialDiv = document.getElementById("historial");
         historialDiv.innerHTML = "";
+        
+        // Muestra las últimas 5 catas individuales
         catas.slice(0, 5).forEach(c => {
             let item = document.createElement("div");
-            item.className = "historial-item";
+            item.className = "lista-item";
             item.innerHTML = `
                 <div>
-                    <strong style="font-size:1.1rem; color:#fff;">${c.variedad}</strong>
-                    <div class="small" style="margin-top:2px;">${c.fecha}</div>
+                    <strong style="font-size:1.1rem; color:#fff;">${capitalizarTexto(c.variedad)}</strong>
+                    <div class="small" style="margin-top:2px;">${c.fecha} - por ${c.nombre}</div>
                 </div>
                 <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px;">${c.nota}</span>
             `;
@@ -373,7 +392,68 @@
         });
     }
 
-    renderHistorial();
+    function renderRanking() {
+        const rankingDiv = document.getElementById("ranking");
+        rankingDiv.innerHTML = "";
+
+        // Agrupamos las catas por variedad ignorando mayúsculas/minúsculas
+        let variedadesAgrupadas = {};
+
+        catas.forEach(c => {
+            if (!c.variedad) return;
+            // Clave única en minúsculas para evitar duplicados
+            let clave = c.variedad.trim().toLowerCase(); 
+            
+            if (!variedadesAgrupadas[clave]) {
+                variedadesAgrupadas[clave] = {
+                    nombreOriginal: c.variedad.trim(),
+                    sumaNotas: 0,
+                    totalCatas: 0
+                };
+            }
+            variedadesAgrupadas[clave].sumaNotas += parseFloat(c.nota);
+            variedadesAgrupadas[clave].totalCatas += 1;
+        });
+
+        // Convertimos el objeto a un Array para poder ordenarlo
+        let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
+            let datos = variedadesAgrupadas[clave];
+            return {
+                nombre: capitalizarTexto(datos.nombreOriginal), // Formato limpio para pantalla
+                promedio: (datos.sumaNotas / datos.totalCatas).toFixed(2),
+                totalCatas: datos.totalCatas
+            };
+        });
+
+        // Ordenamos de mayor nota a menor nota
+        rankingArray.sort((a, b) => b.promedio - a.promedio);
+
+        // Cortamos para mostrar hasta 25 variedades (Modifica el 25 si quieres más o menos)
+        let topVariedades = rankingArray.slice(0, 25); 
+
+        if (topVariedades.length === 0) {
+            rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos para mostrar el ranking todavía.</div>";
+            return;
+        }
+
+        topVariedades.forEach((itemData, index) => {
+            let item = document.createElement("div");
+            item.className = "lista-item";
+            item.innerHTML = `
+                <div>
+                    <strong style="font-size:1.1rem; color:#fff;">
+                        <span class="rank-number">#${index + 1}</span>${itemData.nombre}
+                    </strong>
+                    <div class="small" style="margin-top:2px;">${itemData.totalCatas} ${itemData.totalCatas === 1 ? 'cata' : 'catas'} registrada(s)</div>
+                </div>
+                <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px; background: rgba(46, 204, 113, 0.2);">${itemData.promedio}</span>
+            `;
+            rankingDiv.appendChild(item);
+        });
+    }
+
+    // Inicializar renders al cargar la página
+    renderTodo();
 </script>
 </body>
 </html>
