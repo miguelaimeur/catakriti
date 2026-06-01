@@ -1,459 +1,294 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cata PRO - Sistema de Registro</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ranking Kritical</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        :root {
-            --primary: #2ecc71;
-            --primary-hover: #27ae60;
-            --bg-main: #0d0d0d;
-            --bg-card: #181818;
-            --bg-input: #252525;
-            --border-color: #2a2a2a;
-            --text-main: #f5f5f5;
-            --text-muted: #a0a0a0;
+        html,
+        body {
+            overflow: hidden;
+            height: 100%;
         }
 
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            padding: 20px; 
-            line-height: 1.6;
-            margin: 0;
-        }
-        
-        .container { max-width: 650px; margin: auto; padding-bottom: 5px; }
-        
-        .card { 
-            background: var(--bg-card); 
-            padding: 24px; 
-            border-radius: 16px; 
-            margin-top: 20px; 
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            transition: all 0.3s ease;
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: var(--primary); 
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-        }
-        
-        h2 { 
-            font-size: 1.4rem;
-            color: #fff;
-            margin-top: 0; 
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        h3 { font-size: 1.1rem; margin: 0 0 4px 0; color: #fff; }
-
-        input[type="text"], input[type="number"], textarea { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 10px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-            box-sizing: border-box; 
-            background: var(--bg-input); 
-            color: #fff; 
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
+        body {
+            background: #000;
         }
 
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 20px; 
-            border-radius: 10px; 
-            border: none; 
-            box-sizing: border-box; 
-            background: var(--primary); 
-            color: #051a0e; 
-            font-weight: bold; 
-            font-size: 1.05rem;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-        }
-        
-        button:hover { 
-            background: var(--primary-hover); 
-            transform: translateY(-1px); 
-        }
-        
-        button:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-            transform: none;
+        .top-card {
+            min-height: 150px;
         }
 
-        /* Contenedor del Criterio */
-        .criterio-row {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .criterio-row:last-child { border-bottom: none; }
-        
-        .criterio-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 8px;
-        }
-
-        .small { font-size: 0.88em; color: var(--text-muted); }
-        
-        .badge-nota {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            border: 1px solid rgba(46, 204, 113, 0.2);
-        }
-
-        /* Estilización del Control Deslizante (Slider) */
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: var(--bg-input);
-            border-radius: 5px;
-            outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Nota Destacada Global */
-        .nota-box {
-            text-align: center; 
-            background: #111;
-            border: 1px dashed var(--border-color);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-        .nota-destacada { font-size: 2rem; color: var(--primary); font-weight: 800; display: block; margin-top: 5px;}
-
-        /* Estados de carga/envío */
-        .status { margin-top:15px; padding:14px; border-radius:10px; display:none; text-align: center; font-weight: bold; font-size: 0.95rem; }
-        .status.success { background: rgba(46, 204, 113, 0.2); color: #5efc99; border: 1px solid var(--primary); }
-        .status.error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #e74c3c; }
-        .status.info { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid #3498db; }
-        .status.show { display:block; }
-
-        /* Historial y Ranking */
-        .seccion-title { margin-top: 40px; font-size: 1.2rem; color: var(--text-muted); }
-        .lista-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .rank-number {
-            font-weight: bold;
-            color: var(--primary);
-            margin-right: 8px;
+        .mini-card {
+            min-height: 68px;
         }
     </style>
 </head>
-<body>
 
-<div class="container">
-    <h1>🌿 Cata PRO</h1>
+<body class="text-white font-sans h-screen p-3">
 
-    <div class="card" id="fase1">
-        <h2>📋 Paso 1: Información</h2>
-        <input id="nombre" type="text" placeholder="Tu nombre / Catador">
-        <input id="variedad" type="text" placeholder="Nombre de la Variedad">
-        <button onclick="iniciar()">Empezar cata</button>
-    </div>
+    <div class="max-w-[1920px] mx-auto h-full flex flex-col">
 
-    <div class="card" id="fase2" style="display: none;">
-        <h2>📊 Paso 2: Evaluación</h2>
-        <div id="criterios"></div>
+        <!-- HEADER -->
+        <header class="text-center mb-3 shrink-0">
 
-        <div style="margin-top:25px;">
-            <h3>💬 Comentarios adicionales</h3>
-            <textarea id="comentarios" rows="3" placeholder="Notas sobre el sabor, ceniza, curado..."></textarea>
-            
-            <h3 style="margin-top:20px;">💰 Valoración económica</h3>
-            <input id="precio" type="number" placeholder="¿Cuánto pagarías por g? (€)">
+            <h1 class="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-yellow-500 leading-none">
+                Ranking Kritical
+            </h1>
+
+            <div class="mt-2 text-sm md:text-lg font-black uppercase tracking-[0.15em] text-zinc-300">
+                Visita
+                <span class="text-yellow-500">
+                    WWW.CATAKRITI.COM
+                </span>
+                y participa
+            </div>
+
+            <div class="mt-1 text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-[0.3em]">
+                Resultados Consolidados • Tiempo Real
+            </div>
+
+        </header>
+
+        <!-- CONTENIDO -->
+        <div class="flex-1 flex flex-col gap-3 overflow-hidden">
+
+            <!-- TOP 3 -->
+            <div id="top3-container"
+                class="grid grid-cols-3 gap-3 shrink-0">
+            </div>
+
+            <!-- TOP 4-20 -->
+            <div id="rest-container"
+                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 flex-1 overflow-hidden">
+            </div>
+
         </div>
 
-        <div class="nota-box">
-            <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nota Final Estimada</span>
-            <span id="notaFinal" class="nota-destacada">5.00</span>
-        </div>
-
-        <button id="btnGuardar" onclick="guardar()">Finalizar y Guardar en Drive</button>
-        <div id="status" class="status"></div>
     </div>
 
-    <h2 class="seccion-title">🏆 Top Variedades (Ranking)</h2>
-    <div id="ranking"></div>
+    <script>
 
-    <h2 class="seccion-title">📜 Historial Reciente</h2>
-    <div id="historial"></div>
-</div>
+        const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
 
-<script>
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
-    const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
-    const criteriosLista = [
-        ["Aspecto", "Visual, resina, densidad de tricomas"],
-        ["Olor", "Intensidad y perfil aromático en seco"],
-        ["Olor tras grinder", "Explosión de aromas al picar"],
-        ["Sabor", "Fidelidad al olor y limpieza en boca"],
-        ["Punch", "Rapidez del primer impacto"],
-        ["Pegada", "Potencia máxima alcanzada"],
-        ["Efecto", "Calidad y duración de la experiencia"]
-    ];
+        async function updateRanking() {
 
-    let puntuaciones = {};
-    let catas = JSON.parse(localStorage.getItem("catas")) || [];
+            try {
 
-    function iniciar() {
-        const nom = document.getElementById("nombre").value.trim();
-        const varid = document.getElementById("variedad").value.trim();
-        
-        if(!nom || !varid) {
-            alert("Por favor, introduce tu nombre y la variedad.");
-            return;
-        }
-        
-        document.getElementById("fase1").style.display = "none";
-        document.getElementById("fase2").style.display = "block";
-        
-        const criteriosDiv = document.getElementById("criterios");
-        criteriosDiv.innerHTML = "";
-        puntuaciones = {};
+                const response = await fetch(URL);
 
-        criteriosLista.forEach(c => {
-            puntuaciones[c[0]] = 5; 
+                const csvText = await response.text();
 
-            let bloque = document.createElement("div");
-            bloque.className = "criterio-row";
-            
-            bloque.innerHTML = `
-                <div class="criterio-header">
-                    <div>
-                        <h3>${c[0]}</h3>
-                        <div class="small">${c[1]}</div>
-                    </div>
-                    <span class="badge-nota" id="val-${c[0]}">5</span>
-                </div>
-                <div class="slider-container">
-                    <input type="range" min="1" max="10" step="1" value="5" id="slider-${c[0]}">
-                </div>
-            `;
-            
-            criteriosDiv.appendChild(bloque);
+                const rows = csvText.split('\n').map(row => {
+                    return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                });
 
-            const slider = bloque.querySelector(`#slider-${c[0]}`);
-            slider.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value);
-                document.getElementById(`val-${c[0]}`).textContent = val;
-                puntuaciones[c[0]] = val;
-                calcular();
-            });
-        });
+                const stats = {};
 
-        calcular();
-    }
+                for (let i = 1; i < rows.length; i++) {
 
-    function calcular() {
-        let total = 0, pesoTotal = 0;
-        for(let k in puntuaciones) { 
-            total += puntuaciones[k] * pesos[k]; 
-            pesoTotal += pesos[k]; 
-        }
-        let nota = pesoTotal > 0 ? (total / pesoTotal).toFixed(2) : "0.00";
-        document.getElementById("notaFinal").textContent = nota;
-        return nota;
-    }
+                    let variedad = rows[i][2]
+                        ?.replace(/"/g, '')
+                        .trim();
 
-    function guardar() {
-        const btn = document.getElementById("btnGuardar");
-        btn.disabled = true;
-        btn.innerText = "Enviando datos...";
+                    let nota = parseFloat(
+                        rows[i][4]
+                            ?.replace(/"/g, '')
+                            .replace(',', '.')
+                    );
 
-        const nuevaCata = {
-            fecha: new Date().toLocaleString('es-ES'),
-            nombre: document.getElementById("nombre").value.trim(),
-            variedad: document.getElementById("variedad").value.trim(), // Se guarda tal cual el usuario la escribió para el Drive
-            precio: document.getElementById("precio").value || "0",
-            nota: calcular(),
-            comentarios: document.getElementById("comentarios").value,
-            ...puntuaciones 
-        };
+                    if (variedad && !isNaN(nota)) {
 
-        catas.unshift(nuevaCata);
-        localStorage.setItem("catas", JSON.stringify(catas));
-        
-        renderTodo();
+                        if (!stats[variedad]) {
 
-        mostrarStatus("⏳ Conectando con Google Sheets...", "info");
+                            stats[variedad] = {
+                                total: 0,
+                                count: 0
+                            };
+                        }
 
-        fetch(GOOGLE_SHEETS_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(nuevaCata)
-        })
-        .then(() => {
-            mostrarStatus("✅ ¡Guardado con éxito en la nube!", "success");
-            setTimeout(() => {
-                location.reload();
-            }, 2500);
-        })
-        .catch(err => {
-            console.error(err);
-            mostrarStatus("❌ Error al enviar. Se guardó localmente.", "error");
-            btn.disabled = false;
-            btn.innerText = "Reintentar Guardar";
-        });
-    }
+                        stats[variedad].total += nota;
+                        stats[variedad].count += 1;
+                    }
+                }
 
-    function mostrarStatus(mensaje, tipo) {
-        const statusDiv = document.getElementById("status");
-        statusDiv.textContent = mensaje;
-        statusDiv.className = "status show " + tipo;
-    }
+                const ranking = Object.keys(stats)
+                    .map(name => ({
+                        name,
+                        avg: stats[name].total / stats[name].count,
+                        votes: stats[name].count
+                    }))
+                    .sort((a, b) => b.avg - a.avg)
+                    .slice(0, 20);
 
-    // Función auxiliar para poner la primera letra de cada palabra en mayúscula
-    function capitalizarTexto(texto) {
-        return texto.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-    }
+                render(ranking);
 
-    function renderTodo() {
-        renderHistorial();
-        renderRanking();
-    }
+            } catch (err) {
 
-    function renderHistorial() {
-        const historialDiv = document.getElementById("historial");
-        historialDiv.innerHTML = "";
-        
-        // Muestra las últimas 5 catas individuales
-        catas.slice(0, 5).forEach(c => {
-            let item = document.createElement("div");
-            item.className = "lista-item";
-            item.innerHTML = `
-                <div>
-                    <strong style="font-size:1.1rem; color:#fff;">${capitalizarTexto(c.variedad)}</strong>
-                    <div class="small" style="margin-top:2px;">${c.fecha} - por ${c.nombre}</div>
-                </div>
-                <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px;">${c.nota}</span>
-            `;
-            historialDiv.appendChild(item);
-        });
-    }
-
-    function renderRanking() {
-        const rankingDiv = document.getElementById("ranking");
-        rankingDiv.innerHTML = "";
-
-        // Agrupamos las catas por variedad ignorando mayúsculas/minúsculas
-        let variedadesAgrupadas = {};
-
-        catas.forEach(c => {
-            if (!c.variedad) return;
-            // Clave única en minúsculas para evitar duplicados
-            let clave = c.variedad.trim().toLowerCase(); 
-            
-            if (!variedadesAgrupadas[clave]) {
-                variedadesAgrupadas[clave] = {
-                    nombreOriginal: c.variedad.trim(),
-                    sumaNotas: 0,
-                    totalCatas: 0
-                };
+                console.error("Error:", err);
             }
-            variedadesAgrupadas[clave].sumaNotas += parseFloat(c.nota);
-            variedadesAgrupadas[clave].totalCatas += 1;
-        });
-
-        // Convertimos el objeto a un Array para poder ordenarlo
-        let rankingArray = Object.keys(variedadesAgrupadas).map(clave => {
-            let datos = variedadesAgrupadas[clave];
-            return {
-                nombre: capitalizarTexto(datos.nombreOriginal), // Formato limpio para pantalla
-                promedio: (datos.sumaNotas / datos.totalCatas).toFixed(2),
-                totalCatas: datos.totalCatas
-            };
-        });
-
-        // Ordenamos de mayor nota a menor nota
-        rankingArray.sort((a, b) => b.promedio - a.promedio);
-
-        // Cortamos para mostrar hasta 25 variedades (Modifica el 25 si quieres más o menos)
-        let topVariedades = rankingArray.slice(0, 25); 
-
-        if (topVariedades.length === 0) {
-            rankingDiv.innerHTML = "<div class='small' style='text-align:center; padding:20px;'>No hay datos para mostrar el ranking todavía.</div>";
-            return;
         }
 
-        topVariedades.forEach((itemData, index) => {
-            let item = document.createElement("div");
-            item.className = "lista-item";
-            item.innerHTML = `
-                <div>
-                    <strong style="font-size:1.1rem; color:#fff;">
-                        <span class="rank-number">#${index + 1}</span>${itemData.nombre}
-                    </strong>
-                    <div class="small" style="margin-top:2px;">${itemData.totalCatas} ${itemData.totalCatas === 1 ? 'cata' : 'catas'} registrada(s)</div>
-                </div>
-                <span class="badge-nota" style="font-size:1.1rem; padding: 6px 12px; background: rgba(46, 204, 113, 0.2);">${itemData.promedio}</span>
-            `;
-            rankingDiv.appendChild(item);
-        });
-    }
+        function render(data) {
 
-    // Inicializar renders al cargar la página
-    renderTodo();
-</script>
+            const top3 = document.getElementById('top3-container');
+            const rest = document.getElementById('rest-container');
+
+            top3.innerHTML = '';
+            rest.innerHTML = '';
+
+            if (data.length === 0) {
+
+                rest.innerHTML = `
+                    <div class="col-span-full flex items-center justify-center h-full">
+                        <p class="text-zinc-600 italic text-2xl">
+                            Esperando primeras puntuaciones...
+                        </p>
+                    </div>
+                `;
+
+                return;
+            }
+
+            data.forEach((item, index) => {
+
+                const pos = index + 1;
+
+                let borderColor = "border-zinc-800";
+                let textColor = "text-zinc-400";
+                let bgColor = "bg-zinc-900/70";
+
+                if (pos === 1) {
+                    borderColor = "border-yellow-500";
+                    textColor = "text-yellow-400";
+                    bgColor = "bg-yellow-500/10";
+                }
+
+                if (pos === 2) {
+                    borderColor = "border-zinc-300";
+                    textColor = "text-zinc-100";
+                    bgColor = "bg-zinc-200/10";
+                }
+
+                if (pos === 3) {
+                    borderColor = "border-orange-700";
+                    textColor = "text-orange-500";
+                    bgColor = "bg-orange-500/10";
+                }
+
+                // TOP 3
+                if (pos <= 3) {
+
+                    const card = document.createElement('div');
+
+                    card.className = `
+                        top-card
+                        ${bgColor}
+                        border-2 ${borderColor}
+                        rounded-2xl
+                        p-4
+                        flex flex-col
+                        justify-between
+                        shadow-2xl
+                    `;
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+
+                            <div>
+
+                                <div class="text-5xl font-black italic ${textColor}">
+                                    #${pos}
+                                </div>
+
+                                <div class="mt-2 text-2xl md:text-3xl font-black uppercase leading-tight">
+                                    ${item.name}
+                                </div>
+
+                            </div>
+
+                            <div class="text-right">
+
+                                <div class="text-5xl md:text-6xl font-black font-mono ${textColor}">
+                                    ${item.avg.toFixed(2)}
+                                </div>
+
+                                <div class="text-xs uppercase tracking-[0.2em] text-zinc-500 mt-1">
+                                    Media
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mt-3 text-lg text-zinc-300 font-bold">
+                            ${item.votes} voto${item.votes !== 1 ? 's' : ''}
+                        </div>
+                    `;
+
+                    top3.appendChild(card);
+
+                } else {
+
+                    // RESTO HASTA 20
+
+                    const card = document.createElement('div');
+
+                    card.className = `
+                        mini-card
+                        ${bgColor}
+                        border-l-4 ${borderColor}
+                        rounded-xl
+                        px-3
+                        py-2
+                        flex
+                        items-center
+                        justify-between
+                    `;
+
+                    card.innerHTML = `
+
+                        <div class="flex items-center gap-3 min-w-0">
+
+                            <div class="text-2xl font-black italic ${textColor}">
+                                #${pos}
+                            </div>
+
+                            <div class="min-w-0">
+
+                                <div class="text-sm md:text-base font-black uppercase truncate">
+                                    ${item.name}
+                                </div>
+
+                                <div class="text-[11px] text-zinc-500">
+                                    ${item.votes} voto${item.votes !== 1 ? 's' : ''}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="text-2xl font-black font-mono ${textColor}">
+                            ${item.avg.toFixed(2)}
+                        </div>
+                    `;
+
+                    rest.appendChild(card);
+                }
+            });
+        }
+
+        updateRanking();
+
+        // Actualiza cada 10 segundos
+        setInterval(updateRanking, 10000);
+
+    </script>
+
 </body>
 </html>
