@@ -8,62 +8,77 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        html,
-        body {
-            overflow: hidden;
+        html, body {
             height: 100%;
+            margin: 0;
+            background-color: #050506;
         }
 
-        body {
-            background: #000;
+        /* Fondo dinámico sutil para romper la monotonía del negro absoluto */
+        .bg-mesh {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(234, 179, 8, 0.07) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
         }
 
-        .top-card {
-            min-height: 150px;
+        /* Desplazamiento suave y estilización de barra para pantallas grandes */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(234, 179, 8, 0.3);
         }
 
-        .mini-card {
-            min-height: 68px;
+        /* Animación de entrada para las tarjetas */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
 
-<body class="text-white font-sans h-screen p-3">
+<body class="text-zinc-100 font-sans bg-mesh p-4 md:p-6 flex flex-col h-screen overflow-hidden">
 
-    <div class="max-w-[1920px] mx-auto h-full flex flex-col">
+    <div class="w-full max-w-[1600px] mx-auto flex flex-col h-full gap-6">
 
-        <!-- HEADER -->
-        <header class="text-center mb-3 shrink-0">
+        <header class="text-center shrink-0 flex flex-col items-center">
+            
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-[0.2em] mb-3 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Resultados Consolidados • Tiempo Real
+            </div>
 
-            <h1 class="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-yellow-500 leading-none">
+            <h1 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 bg-clip-text text-transparent leading-none drop-shadow-[0_2px_10px_rgba(234,179,8,0.15)]">
                 Ranking Kritical
             </h1>
 
-            <div class="mt-2 text-sm md:text-lg font-black uppercase tracking-[0.15em] text-zinc-300">
-                Visita
-                <span class="text-yellow-500">
-                    WWW.CATAKRITI.COM
-                </span>
-                y participa
-            </div>
-
-            <div class="mt-1 text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-[0.3em]">
-                Resultados Consolidados • Tiempo Real
+            <div class="mt-3 text-sm md:text-lg font-bold uppercase tracking-[0.2em] text-zinc-400 bg-zinc-900/40 px-4 py-1.5 rounded-xl border border-zinc-900">
+                Visita <span class="text-yellow-400 font-black underline decoration-wavy decoration-amber-500/50 underline-offset-4">WWW.CATAKRITI.COM</span> y participa
             </div>
 
         </header>
 
-        <!-- CONTENIDO -->
-        <div class="flex-1 flex flex-col gap-3 overflow-hidden">
+        <div class="flex-1 flex flex-col gap-6 overflow-hidden min-h-0">
 
-            <!-- TOP 3 -->
-            <div id="top3-container"
-                class="grid grid-cols-3 gap-3 shrink-0">
-            </div>
+            <div id="top3-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+                </div>
 
-            <!-- TOP 4-20 -->
-            <div id="rest-container"
-                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 flex-1 overflow-hidden">
+            <div class="flex-1 flex flex-col min-h-0 bg-zinc-950/40 border border-zinc-900 rounded-2xl p-4">
+                <h3 class="text-xs font-bold tracking-[0.3em] uppercase text-zinc-500 mb-3 px-1">Clasificación General</h3>
+                <div id="rest-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                    </div>
             </div>
 
         </div>
@@ -71,71 +86,51 @@
     </div>
 
     <script>
-
         const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
-
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
         async function updateRanking() {
-
             try {
-
                 const response = await fetch(URL);
-
                 const csvText = await response.text();
 
-                const rows = csvText.split('\n').map(row => {
+                // .replace(/\r/g, "") limpia retornos de carro invisibles que rompen el mapeo
+                const rows = csvText.replace(/\r/g, "").split('\n').map(row => {
                     return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 });
 
                 const stats = {};
 
                 for (let i = 1; i < rows.length; i++) {
-
-                    let variedad = rows[i][2]
-                        ?.replace(/"/g, '')
-                        .trim();
-
-                    let nota = parseFloat(
-                        rows[i][4]
-                            ?.replace(/"/g, '')
-                            .replace(',', '.')
-                    );
+                    let variedad = rows[i][2]?.replace(/"/g, '').trim();
+                    let nota = parseFloat(rows[i][4]?.replace(/"/g, '').replace(',', '.'));
 
                     if (variedad && !isNaN(nota)) {
-
                         if (!stats[variedad]) {
-
-                            stats[variedad] = {
-                                total: 0,
-                                count: 0
-                            };
+                            stats[variedad] = { total: 0, count: 0 };
                         }
-
                         stats[variedad].total += nota;
                         stats[variedad].count += 1;
                     }
                 }
 
+                // Eliminamos el .slice(0, 20) para permitir que lea TODO el set de datos
                 const ranking = Object.keys(stats)
                     .map(name => ({
                         name,
                         avg: stats[name].total / stats[name].count,
                         votes: stats[name].count
                     }))
-                    .sort((a, b) => b.avg - a.avg)
-                    .slice(0, 20);
+                    .sort((a, b) => b.avg - a.avg);
 
                 render(ranking);
 
             } catch (err) {
-
-                console.error("Error:", err);
+                console.error("Error cargando los datos:", err);
             }
         }
 
         function render(data) {
-
             const top3 = document.getElementById('top3-container');
             const rest = document.getElementById('rest-container');
 
@@ -143,151 +138,110 @@
             rest.innerHTML = '';
 
             if (data.length === 0) {
-
                 rest.innerHTML = `
-                    <div class="col-span-full flex items-center justify-center h-full">
-                        <p class="text-zinc-600 italic text-2xl">
+                    <div class="col-span-full flex flex-col items-center justify-center py-12 gap-2">
+                        <span class="text-zinc-600 italic text-xl font-medium animate-pulse">
                             Esperando primeras puntuaciones...
-                        </p>
+                        </span>
                     </div>
                 `;
-
                 return;
             }
 
             data.forEach((item, index) => {
-
                 const pos = index + 1;
 
-                let borderColor = "border-zinc-800";
-                let textColor = "text-zinc-400";
-                let bgColor = "bg-zinc-900/70";
-
-                if (pos === 1) {
-                    borderColor = "border-yellow-500";
-                    textColor = "text-yellow-400";
-                    bgColor = "bg-yellow-500/10";
-                }
-
-                if (pos === 2) {
-                    borderColor = "border-zinc-300";
-                    textColor = "text-zinc-100";
-                    bgColor = "bg-zinc-200/10";
-                }
-
-                if (pos === 3) {
-                    borderColor = "border-orange-700";
-                    textColor = "text-orange-500";
-                    bgColor = "bg-orange-500/10";
-                }
-
-                // TOP 3
                 if (pos <= 3) {
+                    // CONFIGURACIÓN VISUAL PREMIUM PARA EL TOP 3
+                    let styles = {
+                        1: {
+                            border: "border-amber-500/40",
+                            bg: "bg-gradient-to-b from-amber-500/10 to-transparent",
+                            text: "text-amber-400",
+                            glow: "shadow-[0_0_30px_rgba(245,158,11,0.05)]",
+                            badge: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                        },
+                        2: {
+                            border: "border-zinc-400/30",
+                            bg: "bg-gradient-to-b from-zinc-400/5 to-transparent",
+                            text: "text-zinc-300",
+                            glow: "shadow-none",
+                            badge: "bg-zinc-400/10 text-zinc-300 border-zinc-400/20"
+                        },
+                        3: {
+                            border: "border-orange-600/30",
+                            bg: "bg-gradient-to-b from-orange-600/5 to-transparent",
+                            text: "text-orange-400",
+                            glow: "shadow-none",
+                            badge: "bg-orange-600/10 text-orange-400 border-orange-600/20"
+                        }
+                    }[pos];
 
                     const card = document.createElement('div');
-
-                    card.className = `
-                        top-card
-                        ${bgColor}
-                        border-2 ${borderColor}
-                        rounded-2xl
-                        p-4
-                        flex flex-col
-                        justify-between
-                        shadow-2xl
-                    `;
-
+                    card.className = `animate-fade-in ${styles.bg} border ${styles.border} ${styles.glow} rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-zinc-700 transition-all duration-300`;
+                    
                     card.innerHTML = `
-                        <div class="flex justify-between items-start">
-
-                            <div>
-
-                                <div class="text-5xl font-black italic ${textColor}">
-                                    #${pos}
-                                </div>
-
-                                <div class="mt-2 text-2xl md:text-3xl font-black uppercase leading-tight">
+                        <div class="absolute -right-4 -bottom-6 text-9xl font-black italic text-white/[0.02] pointer-events-none select-none font-mono">
+                            #${pos}
+                        </div>
+                        
+                        <div class="flex justify-between items-start gap-4">
+                            <div class="min-w-0">
+                                <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold border ${styles.badge}">
+                                    PUESTO 0${pos}
+                                </span>
+                                <h2 class="mt-3 text-xl md:text-2xl font-black uppercase tracking-tight text-white truncate group-hover:text-amber-400 transition-colors">
                                     ${item.name}
-                                </div>
-
+                                </h2>
                             </div>
-
-                            <div class="text-right">
-
-                                <div class="text-5xl md:text-6xl font-black font-mono ${textColor}">
+                            <div class="text-right shrink-0">
+                                <div class="text-4xl md:text-5xl font-black font-mono tracking-tight ${styles.text}">
                                     ${item.avg.toFixed(2)}
                                 </div>
-
-                                <div class="text-xs uppercase tracking-[0.2em] text-zinc-500 mt-1">
+                                <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold mt-0.5">
                                     Media
                                 </div>
-
                             </div>
-
                         </div>
 
-                        <div class="mt-3 text-lg text-zinc-300 font-bold">
-                            ${item.votes} voto${item.votes !== 1 ? 's' : ''}
+                        <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs text-zinc-400">
+                            <span class="font-medium">${item.votes} ${item.votes === 1 ? 'voto registrado' : 'votos registrados'}</span>
+                            <span class="font-mono text-zinc-600">ID_0${pos}</span>
                         </div>
                     `;
-
                     top3.appendChild(card);
 
                 } else {
-
-                    // RESTO HASTA 20
-
+                    // FILAS COMPACTAS Y ELEGANTES PARA EL RESTO DE ELEMENTOS (4 en adelante)
                     const card = document.createElement('div');
-
-                    card.className = `
-                        mini-card
-                        ${bgColor}
-                        border-l-4 ${borderColor}
-                        rounded-xl
-                        px-3
-                        py-2
-                        flex
-                        items-center
-                        justify-between
-                    `;
+                    card.className = `animate-fade-in bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-900 hover:border-zinc-800 rounded-xl px-3.5 py-3 flex items-center justify-between gap-3 transition-all duration-200`;
 
                     card.innerHTML = `
-
                         <div class="flex items-center gap-3 min-w-0">
-
-                            <div class="text-2xl font-black italic ${textColor}">
+                            <div class="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center font-mono text-sm font-black text-zinc-500 shrink-0 border border-zinc-800/60">
                                 #${pos}
                             </div>
-
                             <div class="min-w-0">
-
-                                <div class="text-sm md:text-base font-black uppercase truncate">
+                                <div class="text-xs md:text-sm font-bold uppercase text-zinc-200 truncate">
                                     ${item.name}
                                 </div>
-
-                                <div class="text-[11px] text-zinc-500">
-                                    ${item.votes} voto${item.votes !== 1 ? 's' : ''}
+                                <div class="text-[11px] text-zinc-500 font-medium">
+                                    ${item.votes} ${item.votes === 1 ? 'voto' : 'votos'}
                                 </div>
-
                             </div>
-
                         </div>
-
-                        <div class="text-2xl font-black font-mono ${textColor}">
+                        <div class="text-lg font-black font-mono text-zinc-400 bg-zinc-950/80 px-2.5 py-1 rounded-md border border-zinc-900">
                             ${item.avg.toFixed(2)}
                         </div>
                     `;
-
                     rest.appendChild(card);
                 }
             });
         }
 
+        // Inicialización y Loop de consulta continua
         updateRanking();
-
-        // Actualiza cada 10 segundos
         setInterval(updateRanking, 10000);
-
     </script>
 
 </body>
