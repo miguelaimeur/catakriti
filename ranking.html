@@ -15,7 +15,6 @@
             background-color: #040405;
         }
 
-        /* Fondo dinámico elegante: movimiento sutil de gradiente + líneas de cuadrícula */
         .bg-dinamico {
             position: relative;
             background: linear-gradient(135deg, #050508 0%, #0d0a0f 50%, #06080c 100%);
@@ -23,7 +22,6 @@
             animation: gradienteSuave 20s ease infinite;
         }
 
-        /* Líneas de cuadrícula fijas sobrepuestas para dar textura tecnológica */
         .bg-dinamico::before {
             content: "";
             position: absolute;
@@ -41,17 +39,22 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Animación suave de entrada */
+        /* ✅ CAMBIO 1: duración del fadeIn aumentada a 1.5s */
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.98); }
             to { opacity: 1; transform: scale(1); }
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Estilo elástico adaptativo para rellenar el espacio sin hacer scroll */
+        /* ✅ CAMBIO 1: clase para ocultar los contenedores antes del rerender */
+        .ranking-hidden {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
         .grid-adaptativo {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -61,7 +64,6 @@
             height: 100%;
         }
 
-        /* Ajuste de columnas en móviles pequeños */
         @media (max-width: 480px) {
             .grid-adaptativo {
                 grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -95,11 +97,11 @@
         <div class="flex-1 flex flex-col gap-3 md:gap-4 overflow-hidden min-h-0">
 
             <div id="top3-container" class="grid grid-cols-3 gap-2 md:gap-4 shrink-0">
-                </div>
+            </div>
 
             <div class="flex-1 flex flex-col min-h-0 bg-zinc-950/20 border border-zinc-900/60 rounded-xl p-2 md:p-3 overflow-hidden">
                 <div id="rest-container" class="grid-adaptativo">
-                    </div>
+                </div>
             </div>
 
         </div>
@@ -109,6 +111,8 @@
     <script>
         const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+        let cachedRanking = null;
 
         async function updateRanking() {
             try {
@@ -134,7 +138,7 @@
                     }
                 }
 
-                const ranking = Object.keys(stats)
+                cachedRanking = Object.keys(stats)
                     .map(name => ({
                         name,
                         avg: stats[name].total / stats[name].count,
@@ -142,11 +146,28 @@
                     }))
                     .sort((a, b) => b.avg - a.avg);
 
-                render(ranking);
+                render(cachedRanking);
 
             } catch (err) {
                 console.error("Error cargando los datos:", err);
             }
+        }
+
+        /* ✅ CAMBIO 1: función que anima la salida y vuelve a renderizar */
+        function animatedRerender() {
+            if (!cachedRanking) return;
+
+            const top3 = document.getElementById('top3-container');
+            const rest = document.getElementById('rest-container');
+
+            top3.classList.add('ranking-hidden');
+            rest.classList.add('ranking-hidden');
+
+            setTimeout(() => {
+                render(cachedRanking);
+                top3.classList.remove('ranking-hidden');
+                rest.classList.remove('ranking-hidden');
+            }, 300);
         }
 
         function render(data) {
@@ -222,7 +243,6 @@
                     top3.appendChild(card);
 
                 } else {
-                    // FILAS COMPACTAS (POSICIÓN 4 EN ADELANTE)
                     const textSize = totalResto > 15 ? 'text-[11px] md:text-xs' : 'text-xs md:text-sm';
                     const paddingSize = totalResto > 15 ? 'p-2' : 'p-2.5';
 
@@ -254,7 +274,12 @@
         }
 
         updateRanking();
-        setInterval(updateRanking, 10000);
+
+        /* ✅ CAMBIO 2: actualización de datos cada 60 s */
+        setInterval(updateRanking, 60000);
+
+        /* ✅ CAMBIO 1: efecto de reaparición visual cada 30 s */
+        setInterval(animatedRerender, 30000);
     </script>
 
 </body>
