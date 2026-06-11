@@ -31,7 +31,6 @@
 <div class="container">
     <h1>🌿 Cata PRO</h1>
 
-    <!-- PASO 1: Ahora sin el precio -->
     <div class="card" id="fase1">
         <h2>Paso 1: Información</h2>
         <input id="nombre" placeholder="Tu nombre / Catador">
@@ -47,7 +46,6 @@
             <h3>Comentarios adicionales</h3>
             <textarea id="comentarios" rows="3" placeholder="Notas sobre el sabor, ceniza, curado..."></textarea>
             
-            <!-- PRECIO MOVIDO AQUÍ -->
             <h3 style="margin-top:15px;">Valoración económica</h3>
             <input id="precio" type="number" placeholder="¿Cuánto pagarías? (€)">
         </div>
@@ -66,7 +64,8 @@
 </div>
 
 <script>
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyRyEGeXjOeUY3p4MJmtVWHnFvD-jaakmifZ9T2QZDkVVRYguOHVsa38Jkq2rntjfHVxA/exec";
+    // URL Actualizada correctamente
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyUujyFpfzXIipfMvMOCgXRF_QjwAFQ6dus9WjexAEeyFcmI9Z39bjOisjNSFRhwN2hsA/exec";
 
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
     const criteriosLista = [
@@ -140,7 +139,6 @@
         btn.disabled = true;
         btn.innerText = "Enviando datos...";
 
-        // Se mantiene el objeto idéntico para que Google Sheets lo reciba igual
         const nuevaCata = {
             fecha: new Date().toLocaleString('es-ES'),
             nombre: document.getElementById("nombre").value,
