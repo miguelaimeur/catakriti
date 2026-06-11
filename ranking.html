@@ -53,7 +53,6 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Grid adaptativo con cajas más grandes para el resto del ranking */
         .grid-adaptativo {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -78,7 +77,6 @@
     <div class="w-full max-w-[1800px] mx-auto flex flex-col h-full gap-5 md:gap-6 z-10 relative">
 
         <header class="text-center shrink-0 flex flex-col items-center">
-            
             <div id="badge-modo" class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-xs md:text-sm font-mono text-zinc-400 uppercase tracking-[0.2em] mb-2.5 shadow-md">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="badge-texto">Ranking General • En Vivo</span>
@@ -91,7 +89,6 @@
             <div class="mt-2 text-sm md:text-xl font-bold uppercase tracking-[0.2em] text-zinc-400">
                 Visita <span class="text-yellow-400 font-black">WWW.CATAKRITI.COM</span> y participa
             </div>
-
         </header>
 
         <div id="ultimo-voto-container" class="shrink-0 bg-zinc-950/60 border-2 border-zinc-900 rounded-2xl p-4 md:p-5 flex items-center justify-between text-center md:text-left gap-6 backdrop-blur-md shadow-2xl max-w-5xl mx-auto w-full animate-fade-in">
@@ -118,15 +115,10 @@
         </div>
 
         <div class="flex-1 flex flex-col gap-4 md:gap-6 overflow-hidden min-h-0">
-
-            <div id="top3-container" class="grid grid-cols-3 gap-3 md:gap-6 shrink-0 transition-all duration-300">
-            </div>
-
+            <div id="top3-container" class="grid grid-cols-3 gap-3 md:gap-6 shrink-0 transition-all duration-300"></div>
             <div id="rest-wrapper" class="flex-1 flex flex-col min-h-0 bg-zinc-950/40 border border-zinc-900 rounded-2xl p-3 md:p-5 overflow-hidden transition-all duration-300">
-                <div id="rest-container" class="grid-adaptativo to-scroll">
-                </div>
+                <div id="rest-container" class="grid-adaptativo"></div>
             </div>
-
         </div>
 
     </div>
@@ -138,9 +130,56 @@
         let cachedRanking = null;
         let modoGeneral = true;
 
+        // Limpieza básica de formato
         function normalizarTexto(texto) {
             if (!texto) return '';
             return texto.toLowerCase().replace(/\s+/g, ' ').trim();
+        }
+
+        // Algoritmo de Levenshtein para calcular la similitud real entre dos textos
+        function calcularSimilitud(s1, s2) {
+            let l1 = s1.length;
+            let l2 = s2.length;
+            if (l1 === 0 || l2 === 0) return 0;
+
+            let matrix = [];
+            for (let i = 0; i <= l1; i++) matrix[i] = [i];
+            for (let j = 0; j <= l2; j++) matrix[0][j] = j;
+
+            for (let i = 1; i <= l1; i++) {
+                for (let j = 1; j <= l2; j++) {
+                    let cost = (s1[i - 1] === s2[j - 1]) ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,     // Borrado
+                        matrix[i][j - 1] + 1,     // Inserción
+                        matrix[i - 1][j - 1] + cost // Sustitución
+                    );
+                }
+            }
+            
+            let distancia = matrix[l1][l2];
+            let longitudMaxima = Math.max(l1, l2);
+            // Devuelve un porcentaje de coincidencia entre 0.0 y 1.0
+            return (longitudMaxima - distancia) / longitudMaxima;
+        }
+
+        // Busca si el texto se parece a algo ya registrado basándose en la primera inscripción
+        function buscarClaveExistente(nuevaVariedad, listaClaves) {
+            const nuevaNorm = normalizarTexto(nuevaVariedad);
+            if (!nuevaNorm) return null;
+
+            for (let clave de listaClaves) {
+                // Si son idénticas tras normalizar básico
+                if (clave === nuevaNorm) return clave;
+
+                // Si tienen un 80% o más de similitud exacta por letras, las unifica
+                // Esto absorbe errores como "Zkitlez star" vs "Zkittlez star"
+                // Pero descarta "Zkittlez star" vs "Zkittlez mellow" porque su similitud es muy baja (~50%)
+                if (calcularSimilitud(nuevaNorm, clave) >= 0.80) {
+                    return clave;
+                }
+            }
+            return null; // Si no se parece a nada, es una variedad nueva
         }
 
         async function updateRanking() {
@@ -183,19 +222,23 @@
                     let nota = parseFloat(notaRaw?.replace(',', '.'));
 
                     if (variedadOriginal && !isNaN(nota)) {
-                        let claveUnica = normalizarTexto(variedadOriginal);
+                        let listaClavesActuales = Object.keys(stats);
+                        let claveDestino = buscarClaveExistente(variedadOriginal, listaClavesActuales);
 
-                        if (!stats[claveUnica]) {
-                            stats[claveUnica] = { 
-                                displayName: variedadOriginal,
+                        // Si no hay una clave parecida previa, creamos una nueva con el formato original de esta primera inscripción
+                        if (!claveDestino) {
+                            claveDestino = normalizarTexto(variedadOriginal);
+                            stats[claveDestino] = { 
+                                displayName: variedadOriginal, // Queda fija la primera forma en que se escribió
                                 total: 0, 
                                 count: 0,
                                 notas: []
                             };
                         }
-                        stats[claveUnica].total += nota;
-                        stats[claveUnica].count += 1;
-                        stats[claveUnica].notas.push(nota);
+                        
+                        stats[claveDestino].total += nota;
+                        stats[claveDestino].count += 1;
+                        stats[claveDestino].notas.push(nota);
                     }
                 }
 
@@ -252,7 +295,6 @@
             }
 
             if (modoGeneral) {
-                // ================= MODO GENERAL (ENGRANDENIDO) =================
                 badgeTexto.innerText = "Ranking General • En Vivo";
                 top3.className = "grid grid-cols-3 gap-4 md:gap-6 shrink-0";
                 restWrapper.style.display = "flex";
@@ -268,7 +310,6 @@
                         }[pos];
 
                         const card = document.createElement('div');
-                        // Se aumentó el padding interno (p-5) y el alto mínimo
                         card.className = `animate-fade-in ${styles.bg} border-2 ${styles.border} rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden min-h-[140px] md:min-h-[180px]`;
                         
                         card.innerHTML = `
@@ -286,7 +327,6 @@
                         `;
                         top3.appendChild(card);
                     } else {
-                        // Tarjetas del resto de la lista sustancialmente más altas y legibles
                         const card = document.createElement('div');
                         card.className = `animate-fade-in bg-zinc-900/30 border-2 border-zinc-900/80 rounded-xl p-3.5 flex flex-col justify-between min-h-[85px] md:min-h-[100px]`;
 
@@ -304,7 +344,6 @@
                     }
                 });
             } else {
-                // ================= MODO DETALLE TOP 5 (ENGROUNDENIDO) =================
                 badgeTexto.innerText = "Detalle de Votos • Top 5 de la Cata";
                 top3.className = "grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 h-full flex-1 min-h-0 w-full"; 
                 restWrapper.style.display = "none";
@@ -314,7 +353,6 @@
                 top5Data.forEach((item, index) => {
                     const pos = index + 1;
                     
-                    // Votos individuales con mayor tamaño de texto y padding
                     const votosHTML = item.notas.map((nota, i) => `
                         <div class="flex items-center justify-between text-sm font-mono py-2 px-2.5 rounded-xl bg-zinc-950/60 border border-zinc-900/80">
                             <span class="text-zinc-500 text-xs">Cata #${i + 1}</span>
@@ -336,7 +374,6 @@
                             </h2>
                             <p class="text-xs text-zinc-500 font-mono mt-1">${item.votes} votos registrados</p>
                         </div>
-                        
                         <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-zinc-400 scrollbar-thin">
                             ${votosHTML}
                         </div>
