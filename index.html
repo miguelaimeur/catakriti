@@ -7,8 +7,35 @@
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background:#111; color:#fff; padding:20px; line-height: 1.6; }
         .container { max-width:700px; margin:auto; }
+        
+        /* Cabecera adaptada para el título y el botón */
+        .header-container { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        h1 { margin: 0; color: #2ecc71; }
+        
+        /* Estilo del nuevo botón RANKING */
+        .btn-ranking { 
+            background: transparent; 
+            color: #2ecc71; 
+            border: 2px solid #2ecc71; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            text-decoration: none; 
+            transition: 0.3s; 
+            text-align: center;
+        }
+        .btn-ranking:hover { 
+            background: #2ecc71; 
+            color: #000; 
+            transform: translateY(-2px); 
+        }
+
         .card { background:#222; padding:20px; border-radius:12px; margin-top:15px; border: 1px solid #333; }
-        h1 { text-align: center; color: #2ecc71; }
         h2 { border-bottom: 2px solid #2ecc71; padding-bottom: 5px; margin-top: 0; }
         input, textarea, button { width:100%; padding:12px; margin-top:10px; border-radius:8px; border:none; box-sizing: border-box; }
         input, textarea { background: #333; color: #fff; border: 1px solid #444; }
@@ -29,7 +56,11 @@
 <body>
 
 <div class="container">
-    <h1>🌿 Cata PRO</h1>
+    
+    <div class="header-container">
+        <h1>🌿 Cata PRO</h1>
+        <a href="https://www.catakriti.com/ranking" class="btn-ranking">RANKING</a>
+    </div>
 
     <div class="card" id="fase1">
         <h2>Paso 1: Información</h2>
@@ -64,7 +95,6 @@
 </div>
 
 <script>
-    // URL Corregida e implementada correctamente
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzU_ycbjpWUSFAJPAqZDJ59iA87yP2qh-IUNsDHPEqtDJj1QXtzkeINyGpNyAm0CoXp1A/exec";
 
     const pesos = { "Aspecto": 1, "Olor": 1.5, "Olor tras grinder": 1.5, "Sabor": 2, "Punch": 2, "Pegada": 2, "Efecto": 2 };
