@@ -39,7 +39,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* ✅ CAMBIO 1: duración del fadeIn aumentada a 1.5s */
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.98); }
             to { opacity: 1; transform: scale(1); }
@@ -49,7 +48,6 @@
             animation: fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* ✅ CAMBIO 1: clase para ocultar los contenedores antes del rerender */
         .ranking-hidden {
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -109,7 +107,8 @@
     </div>
 
     <script>
-        const SHEET_ID = '1b8rv0cUEfBeJkLPMSG4ew1CnCAA2DKCA53pp0syQJl4';
+        // SHEET_ID Cambiado al nuevo documento proporcionado
+        const SHEET_ID = '18p9zl-VbQ7GcLUZdPD8EvB5xtRGJm6szt90hzO4MaPE';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
         let cachedRanking = null;
@@ -119,15 +118,25 @@
                 const response = await fetch(URL);
                 const csvText = await response.text();
 
-                const rows = csvText.replace(/\r/g, "").split('\n').map(row => {
-                    return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                });
-
+                // Divide por filas limpiando los retornos de carro
+                const rawRows = csvText.replace(/\r/g, "").split('\n');
+                
                 const stats = {};
 
-                for (let i = 1; i < rows.length; i++) {
-                    let variedad = rows[i][2]?.replace(/"/g, '').trim();
-                    let nota = parseFloat(rows[i][4]?.replace(/"/g, '').replace(',', '.'));
+                for (let i = 1; i < rawRows.length; i++) {
+                    if (!rawRows[i].trim()) continue;
+                    
+                    // Soporte híbrido: Si el documento viene separado por punto y coma (típico de Sheets en español con decimales por comas) o por comas nativas.
+                    let columnas = rawRows[i].split(';');
+                    if (columnas.length <= 1) {
+                        columnas = rawRows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    }
+
+                    let variedad = columnas[2]?.replace(/"/g, '').trim();
+                    let notaRaw = columnas[4]?.replace(/"/g, '').trim();
+                    
+                    // Reemplaza comas por puntos para asegurar que parseFloat no devuelva NaN
+                    let nota = parseFloat(notaRaw?.replace(',', '.'));
 
                     if (variedad && !isNaN(nota)) {
                         if (!stats[variedad]) {
@@ -149,11 +158,10 @@
                 render(cachedRanking);
 
             } catch (err) {
-                console.error("Error cargando los datos:", err);
+                console.error("Error cargando los datos del ranking:", err);
             }
         }
 
-        /* ✅ CAMBIO 1: función que anima la salida y vuelve a renderizar */
         function animatedRerender() {
             if (!cachedRanking) return;
 
@@ -180,7 +188,7 @@
             if (data.length === 0) {
                 rest.innerHTML = `
                     <div class="h-full w-full flex items-center justify-center col-span-full">
-                        <span class="text-zinc-600 italic text-lg animate-pulse">Esperando datos...</span>
+                        <span class="text-zinc-600 italic text-lg animate-pulse">Esperando datos de catas...</span>
                     </div>
                 `;
                 return;
@@ -273,12 +281,13 @@
             });
         }
 
+        // Ejecución inicial
         updateRanking();
 
-        /* ✅ CAMBIO 2: actualización de datos cada 60 s */
+        // Actualización en segundo plano de datos de red cada 60 segundos
         setInterval(updateRanking, 60000);
 
-        /* ✅ CAMBIO 1: efecto de reaparición visual cada 30 s */
+        // Renderizado visual animado en pantalla cada 30 segundos
         setInterval(animatedRerender, 30000);
     </script>
 
