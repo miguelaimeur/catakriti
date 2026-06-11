@@ -286,4 +286,70 @@
                         `;
                         top3.appendChild(card);
                     } else {
-                        // Tarjetas del resto de la lista sustancialmente más altas
+                        // Tarjetas del resto de la lista sustancialmente más altas y legibles
+                        const card = document.createElement('div');
+                        card.className = `animate-fade-in bg-zinc-900/30 border-2 border-zinc-900/80 rounded-xl p-3.5 flex flex-col justify-between min-h-[85px] md:min-h-[100px]`;
+
+                        card.innerHTML = `
+                            <div class="flex items-start gap-2 min-w-0">
+                                <span class="font-mono text-xs md:text-sm font-bold text-zinc-600 mt-0.5 shrink-0">#${pos}</span>
+                                <div class="text-sm md:text-lg font-black uppercase text-zinc-200 line-clamp-2 break-words leading-tight w-full">${item.name}</div>
+                            </div>
+                            <div class="flex items-end justify-between mt-2 pt-2 border-t border-white/[0.03]">
+                                <span class="text-xs text-zinc-500 font-medium leading-none">${item.votes} v.</span>
+                                <span class="text-sm md:text-xl font-black font-mono text-zinc-300 bg-zinc-950/80 px-2 py-0.5 rounded-lg border border-zinc-900 leading-none">${item.avg.toFixed(2)}</span>
+                            </div>
+                        `;
+                        restContainer.appendChild(card);
+                    }
+                });
+            } else {
+                // ================= MODO DETALLE TOP 5 (ENGROUNDENIDO) =================
+                badgeTexto.innerText = "Detalle de Votos • Top 5 de la Cata";
+                top3.className = "grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 h-full flex-1 min-h-0 w-full"; 
+                restWrapper.style.display = "none";
+
+                const top5Data = cachedRanking.slice(0, 5);
+
+                top5Data.forEach((item, index) => {
+                    const pos = index + 1;
+                    
+                    // Votos individuales con mayor tamaño de texto y padding
+                    const votosHTML = item.notas.map((nota, i) => `
+                        <div class="flex items-center justify-between text-sm font-mono py-2 px-2.5 rounded-xl bg-zinc-950/60 border border-zinc-900/80">
+                            <span class="text-zinc-500 text-xs">Cata #${i + 1}</span>
+                            <span class="font-black text-yellow-400 text-base">${nota.toFixed(1)}</span>
+                        </div>
+                    `).join('');
+
+                    const card = document.createElement('div');
+                    card.className = "animate-fade-in bg-zinc-900/10 border-2 border-zinc-900 rounded-2xl p-4 flex flex-col h-full min-h-0 overflow-hidden";
+                    
+                    card.innerHTML = `
+                        <div class="shrink-0 pb-3 border-b-2 border-zinc-900 mb-3">
+                            <div class="flex justify-between items-center">
+                                <span class="px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-zinc-800 text-zinc-300">PUESTO 0${pos}</span>
+                                <span class="text-base font-mono font-black text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/30">${item.avg.toFixed(2)}</span>
+                            </div>
+                            <h2 class="mt-3 text-base md:text-2xl font-black uppercase tracking-tight text-white line-clamp-2 break-words leading-tight">
+                                ${item.name}
+                            </h2>
+                            <p class="text-xs text-zinc-500 font-mono mt-1">${item.votes} votos registrados</p>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-zinc-400 scrollbar-thin">
+                            ${votosHTML}
+                        </div>
+                    `;
+                    top3.appendChild(card);
+                });
+            }
+        }
+
+        updateRanking();
+        setInterval(updateRanking, 60000);
+        setInterval(alternarVista, 30000);
+    </script>
+
+</body>
+</html>
