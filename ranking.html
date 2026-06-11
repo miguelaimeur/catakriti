@@ -77,9 +77,9 @@
 
         <header class="text-center shrink-0 flex flex-col items-center">
             
-            <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-zinc-900/60 border border-zinc-800/80 text-[9px] md:text-xs font-mono text-zinc-400 uppercase tracking-[0.15em] mb-1.5 shadow-inner">
+            <div id="badge-modo" class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-zinc-900/60 border border-zinc-800/80 text-[9px] md:text-xs font-mono text-zinc-400 uppercase tracking-[0.15em] mb-1.5 shadow-inner">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Resultados Consolidados • En Vivo
+                <span id="badge-texto">Ranking General • En Vivo</span>
             </div>
 
             <h1 class="text-4xl md:text-6xl font-black uppercase italic tracking-tighter bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500 bg-clip-text text-transparent leading-none drop-shadow-[0_2px_8px_rgba(234,179,8,0.1)]">
@@ -94,10 +94,10 @@
 
         <div class="flex-1 flex flex-col gap-3 md:gap-4 overflow-hidden min-h-0">
 
-            <div id="top3-container" class="grid grid-cols-3 gap-2 md:gap-4 shrink-0">
+            <div id="top3-container" class="grid grid-cols-3 gap-2 md:gap-4 shrink-0 transition-all duration-300">
             </div>
 
-            <div class="flex-1 flex flex-col min-h-0 bg-zinc-950/20 border border-zinc-900/60 rounded-xl p-2 md:p-3 overflow-hidden">
+            <div id="rest-wrapper" class="flex-1 flex flex-col min-h-0 bg-zinc-950/20 border border-zinc-900/60 rounded-xl p-2 md:p-3 overflow-hidden transition-all duration-300">
                 <div id="rest-container" class="grid-adaptativo">
                 </div>
             </div>
@@ -107,86 +107,101 @@
     </div>
 
     <script>
-        // SHEET_ID Cambiado al nuevo documento proporcionado
         const SHEET_ID = '18p9zl-VbQ7GcLUZdPD8EvB5xtRGJm6szt90hzO4MaPE';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
         let cachedRanking = null;
+        let modoGeneral = true; // Controla qué vista toca mostrar
+
+        function normalizarTexto(texto) {
+            if (!texto) return '';
+            return texto.toLowerCase().replace(/\s+/g, ' ').trim();
+        }
 
         async function updateRanking() {
             try {
                 const response = await fetch(URL);
                 const csvText = await response.text();
 
-                // Divide por filas limpiando los retornos de carro
                 const rawRows = csvText.replace(/\r/g, "").split('\n');
-                
                 const stats = {};
 
                 for (let i = 1; i < rawRows.length; i++) {
                     if (!rawRows[i].trim()) continue;
                     
-                    // Soporte híbrido: Si el documento viene separado por punto y coma (típico de Sheets en español con decimales por comas) o por comas nativas.
                     let columnas = rawRows[i].split(';');
                     if (columnas.length <= 1) {
                         columnas = rawRows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     }
 
-                    let variedad = columnas[2]?.replace(/"/g, '').trim();
+                    let variedadOriginal = columnas[2]?.replace(/"/g, '').trim();
                     let notaRaw = columnas[4]?.replace(/"/g, '').trim();
-                    
-                    // Reemplaza comas por puntos para asegurar que parseFloat no devuelva NaN
                     let nota = parseFloat(notaRaw?.replace(',', '.'));
 
-                    if (variedad && !isNaN(nota)) {
-                        if (!stats[variedad]) {
-                            stats[variedad] = { total: 0, count: 0 };
+                    if (variedadOriginal && !isNaN(nota)) {
+                        let claveUnica = normalizarTexto(variedadOriginal);
+
+                        if (!stats[claveUnica]) {
+                            stats[claveUnica] = { 
+                                displayName: variedadOriginal,
+                                total: 0, 
+                                count: 0,
+                                notas: [] // Guardamos los votos por separado para el desglose
+                            };
                         }
-                        stats[variedad].total += nota;
-                        stats[variedad].count += 1;
+                        stats[claveUnica].total += nota;
+                        stats[claveUnica].count += 1;
+                        stats[claveUnica].notas.push(nota);
                     }
                 }
 
                 cachedRanking = Object.keys(stats)
-                    .map(name => ({
-                        name,
-                        avg: stats[name].total / stats[name].count,
-                        votes: stats[name].count
+                    .map(key => ({
+                        name: stats[key].displayName,
+                        avg: stats[key].total / stats[key].count,
+                        votes: stats[key].count,
+                        notas: stats[key].notas.sort((a, b) => b - a) // Ordenamos las notas individuales de mayor a menor
                     }))
                     .sort((a, b) => b.avg - a.avg);
 
-                render(cachedRanking);
+                render();
 
             } catch (err) {
                 console.error("Error cargando los datos del ranking:", err);
             }
         }
 
-        function animatedRerender() {
+        // Esta función ahora maneja la alternancia de vistas con animación fluida
+        function alternarVista() {
             if (!cachedRanking) return;
 
             const top3 = document.getElementById('top3-container');
-            const rest = document.getElementById('rest-container');
+            const restWrapper = document.getElementById('rest-wrapper');
 
+            // Efecto fade out previo al cambio de datos
             top3.classList.add('ranking-hidden');
-            rest.classList.add('ranking-hidden');
+            restWrapper.classList.add('ranking-hidden');
 
             setTimeout(() => {
-                render(cachedRanking);
+                modoGeneral = !modoGeneral; // Cambia de modo técnico
+                render();
+                
                 top3.classList.remove('ranking-hidden');
-                rest.classList.remove('ranking-hidden');
+                restWrapper.classList.remove('ranking-hidden');
             }, 300);
         }
 
-        function render(data) {
+        function render() {
             const top3 = document.getElementById('top3-container');
-            const rest = document.getElementById('rest-container');
+            const restContainer = document.getElementById('rest-container');
+            const restWrapper = document.getElementById('rest-wrapper');
+            const badgeTexto = document.getElementById('badge-texto');
 
             top3.innerHTML = '';
-            rest.innerHTML = '';
+            restContainer.innerHTML = '';
 
-            if (data.length === 0) {
-                rest.innerHTML = `
+            if (!cachedRanking || cachedRanking.length === 0) {
+                restContainer.innerHTML = `
                     <div class="h-full w-full flex items-center justify-center col-span-full">
                         <span class="text-zinc-600 italic text-lg animate-pulse">Esperando datos de catas...</span>
                     </div>
@@ -194,101 +209,114 @@
                 return;
             }
 
-            const totalResto = data.length - 3;
+            if (modoGeneral) {
+                // ================= VISUALIZACIÓN: RANKING GENERAL =================
+                badgeTexto.innerText = "Ranking General • En Vivo";
+                top3.className = "grid grid-cols-3 gap-2 md:gap-4 shrink-0"; // Volvemos a rejilla de 3 columnas
+                restWrapper.style.display = "flex"; // Mostramos el resto del ranking
 
-            data.forEach((item, index) => {
-                const pos = index + 1;
+                cachedRanking.forEach((item, index) => {
+                    const pos = index + 1;
 
-                if (pos <= 3) {
-                    let styles = {
-                        1: {
-                            border: "border-amber-500/30",
-                            bg: "bg-gradient-to-b from-amber-500/10 to-zinc-900/10",
-                            text: "text-amber-400",
-                            badge: "bg-amber-500/20 text-amber-300 border-amber-500/20"
-                        },
-                        2: {
-                            border: "border-zinc-400/20",
-                            bg: "bg-gradient-to-b from-zinc-400/5 to-zinc-900/10",
-                            text: "text-zinc-300",
-                            badge: "bg-zinc-400/10 text-zinc-300 border-zinc-400/20"
-                        },
-                        3: {
-                            border: "border-orange-600/20",
-                            bg: "bg-gradient-to-b from-orange-600/5 to-zinc-900/10",
-                            text: "text-orange-400",
-                            badge: "bg-orange-600/10 text-orange-400 border-orange-600/20"
-                        }
-                    }[pos];
+                    if (pos <= 3) {
+                        let styles = {
+                            1: { border: "border-amber-500/30", bg: "bg-gradient-to-b from-amber-500/10 to-zinc-900/10", text: "text-amber-400", badge: "bg-amber-500/20 text-amber-300 border-amber-500/20" },
+                            2: { border: "border-zinc-400/20", bg: "bg-gradient-to-b from-zinc-400/5 to-zinc-900/10", text: "text-zinc-300", badge: "bg-zinc-400/10 text-zinc-300 border-zinc-400/20" },
+                            3: { border: "border-orange-600/20", bg: "bg-gradient-to-b from-orange-600/5 to-zinc-900/10", text: "text-orange-400", badge: "bg-orange-600/10 text-orange-400 border-orange-600/20" }
+                        }[pos];
+
+                        const card = document.createElement('div');
+                        card.className = `animate-fade-in ${styles.bg} border ${styles.border} rounded-xl p-3 flex flex-col justify-between relative overflow-hidden`;
+                        
+                        card.innerHTML = `
+                            <div>
+                                <span class="inline-block px-1.5 py-0.5 rounded text-[9px] md:text-xs font-mono font-bold border ${styles.badge}">TOP 0${pos}</span>
+                                <h2 class="mt-1.5 text-sm md:text-xl font-black uppercase tracking-tight text-white line-clamp-2 break-words">${item.name}</h2>
+                            </div>
+                            <div class="mt-3 flex justify-between items-end">
+                                <div class="text-[9px] md:text-xs text-zinc-500 font-mono">${item.votes} ${item.votes === 1 ? 'voto' : 'votos'}</div>
+                                <div class="text-right">
+                                    <div class="text-xl md:text-4xl font-black font-mono leading-none ${styles.text}">${item.avg.toFixed(2)}</div>
+                                    <div class="text-[8px] uppercase tracking-wider text-zinc-500 font-bold mt-1">Media</div>
+                                </div>
+                            </div>
+                        `;
+                        top3.appendChild(card);
+                    } else {
+                        const totalResto = cachedRanking.length - 3;
+                        const textSize = totalResto > 15 ? 'text-[11px] md:text-xs' : 'text-xs md:text-sm';
+                        const paddingSize = totalResto > 15 ? 'p-2' : 'p-2.5';
+
+                        const card = document.createElement('div');
+                        card.className = `animate-fade-in bg-zinc-900/20 border border-zinc-900/80 rounded-lg ${paddingSize} flex flex-col justify-between h-full min-h-[55px] md:min-h-[65px]`;
+
+                        card.innerHTML = `
+                            <div class="flex items-start gap-1.5 min-w-0">
+                                <span class="font-mono text-[9px] md:text-[11px] font-bold text-zinc-600 mt-0.5 shrink-0">#${pos}</span>
+                                <div class="${textSize} font-bold uppercase text-zinc-200 line-clamp-2 break-words leading-tight w-full">${item.name}</div>
+                            </div>
+                            <div class="flex items-end justify-between mt-1 pt-1 border-t border-white/[0.02]">
+                                <span class="text-[9px] text-zinc-600 font-medium leading-none">${item.votes} v.</span>
+                                <span class="text-xs md:text-base font-black font-mono text-zinc-400 bg-zinc-950/60 px-1.5 py-0.5 rounded border border-zinc-900/50 leading-none">${item.avg.toFixed(2)}</span>
+                            </div>
+                        `;
+                        restContainer.appendChild(card);
+                    }
+                });
+            } else {
+                // ================= VISUALIZACIÓN: DETALLE TOP 5 VOTOS =================
+                badgeTexto.innerText = "Detalle de Votos • Top 5 de la Cata";
+                
+                // Cambiamos el contenedor superior para que use todo el alto disponible en pantalla
+                top3.className = "grid grid-cols-1 md:grid-cols-5 gap-3 h-full flex-1 min-h-0 w-full"; 
+                restWrapper.style.display = "none"; // Ocultamos el resto para enfocar los tops
+
+                // Sacamos únicamente los 5 primeros puestos
+                const top5Data = cachedRanking.slice(0, 5);
+
+                top5Data.forEach((item, index) => {
+                    const pos = index + 1;
+                    
+                    // Generamos la lista visual de los votos ordenados por separado
+                    const votosHTML = item.notas.map((nota, i) => `
+                        <div class="flex items-center justify-between text-xs font-mono py-1 px-1.5 rounded bg-zinc-950/40 border border-zinc-900/50">
+                            <span class="text-zinc-500 text-[10px]">Cata #${i + 1}</span>
+                            <span class="font-bold text-yellow-400/90">${nota.toFixed(1)}</span>
+                        </div>
+                    `).join('');
 
                     const card = document.createElement('div');
-                    card.className = `animate-fade-in ${styles.bg} border ${styles.border} rounded-xl p-3 flex flex-col justify-between relative overflow-hidden`;
+                    card.className = "animate-fade-in bg-zinc-900/10 border border-zinc-800/40 rounded-xl p-3 flex flex-col h-full min-h-0 overflow-hidden";
                     
                     card.innerHTML = `
-                        <div>
-                            <span class="inline-block px-1.5 py-0.5 rounded text-[9px] md:text-xs font-mono font-bold border ${styles.badge}">
-                                TOP 0${pos}
-                            </span>
-                            <h2 class="mt-1.5 text-sm md:text-xl font-black uppercase tracking-tight text-white line-clamp-2 break-words">
+                        <div class="shrink-0 pb-2 border-b border-zinc-800/60 mb-2">
+                            <div class="flex justify-between items-center">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300">PUESTO 0${pos}</span>
+                                <span class="text-xs font-mono font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${item.avg.toFixed(2)}</span>
+                            </div>
+                            <h2 class="mt-2 text-sm md:text-base font-black uppercase tracking-tight text-white line-clamp-2 break-words leading-tight">
                                 ${item.name}
                             </h2>
+                            <p class="text-[9px] text-zinc-500 font-mono mt-0.5">${item.votes} votos registrados</p>
                         </div>
                         
-                        <div class="mt-3 flex justify-between items-end">
-                            <div class="text-[9px] md:text-xs text-zinc-500 font-mono">
-                                ${item.votes} ${item.votes === 1 ? 'voto' : 'votos'}
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xl md:text-4xl font-black font-mono leading-none ${styles.text}">
-                                    ${item.avg.toFixed(2)}
-                                </div>
-                                <div class="text-[8px] uppercase tracking-wider text-zinc-500 font-bold mt-1">
-                                    Media
-                                </div>
-                            </div>
+                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-1 text-zinc-400 scrollbar-thin">
+                            ${votosHTML}
                         </div>
                     `;
                     top3.appendChild(card);
-
-                } else {
-                    const textSize = totalResto > 15 ? 'text-[11px] md:text-xs' : 'text-xs md:text-sm';
-                    const paddingSize = totalResto > 15 ? 'p-2' : 'p-2.5';
-
-                    const card = document.createElement('div');
-                    card.className = `animate-fade-in bg-zinc-900/20 border border-zinc-900/80 rounded-lg ${paddingSize} flex flex-col justify-between h-full min-h-[55px] md:min-h-[65px]`;
-
-                    card.innerHTML = `
-                        <div class="flex items-start gap-1.5 min-w-0">
-                            <span class="font-mono text-[9px] md:text-[11px] font-bold text-zinc-600 mt-0.5 shrink-0">
-                                #${pos}
-                            </span>
-                            <div class="${textSize} font-bold uppercase text-zinc-200 line-clamp-2 break-words leading-tight w-full">
-                                ${item.name}
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-end justify-between mt-1 pt-1 border-t border-white/[0.02]">
-                            <span class="text-[9px] text-zinc-600 font-medium leading-none">
-                                ${item.votes} v.
-                            </span>
-                            <span class="text-xs md:text-base font-black font-mono text-zinc-400 bg-zinc-950/60 px-1.5 py-0.5 rounded border border-zinc-900/50 leading-none">
-                                ${item.avg.toFixed(2)}
-                            </span>
-                        </div>
-                    `;
-                    rest.appendChild(card);
-                }
-            });
+                });
+            }
         }
 
-        // Ejecución inicial
+        // Inicializar carga de datos de Google Sheets
         updateRanking();
 
-        // Actualización en segundo plano de datos de red cada 60 segundos
+        // Actualiza el listado real desde la red en segundo plano cada 60s
         setInterval(updateRanking, 60000);
 
-        // Renderizado visual animado en pantalla cada 30 segundos
-        setInterval(animatedRerender, 30000);
+        // Hace el salto visual (Ranking General <--> Detalle Top 5) de manera exacta cada 30s
+        setInterval(alternarVista, 30000);
     </script>
 
 </body>
