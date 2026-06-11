@@ -130,13 +130,12 @@
         let cachedRanking = null;
         let modoGeneral = true;
 
-        // Limpieza básica de formato
         function normalizarTexto(texto) {
             if (!texto) return '';
             return texto.toLowerCase().replace(/\s+/g, ' ').trim();
         }
 
-        // Algoritmo de Levenshtein para calcular la similitud real entre dos textos
+        // Calcula la distancia matemática Levenshtein entre dos textos
         function calcularSimilitud(s1, s2) {
             let l1 = s1.length;
             let l2 = s2.length;
@@ -150,36 +149,15 @@
                 for (let j = 1; j <= l2; j++) {
                     let cost = (s1[i - 1] === s2[j - 1]) ? 0 : 1;
                     matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,     // Borrado
-                        matrix[i][j - 1] + 1,     // Inserción
-                        matrix[i - 1][j - 1] + cost // Sustitución
+                        matrix[i - 1][j] + 1,     
+                        matrix[i][j - 1] + 1,     
+                        matrix[i - 1][j - 1] + cost 
                     );
                 }
             }
-            
             let distancia = matrix[l1][l2];
             let longitudMaxima = Math.max(l1, l2);
-            // Devuelve un porcentaje de coincidencia entre 0.0 y 1.0
             return (longitudMaxima - distancia) / longitudMaxima;
-        }
-
-        // Busca si el texto se parece a algo ya registrado basándose en la primera inscripción
-        function buscarClaveExistente(nuevaVariedad, listaClaves) {
-            const nuevaNorm = normalizarTexto(nuevaVariedad);
-            if (!nuevaNorm) return null;
-
-            for (let clave de listaClaves) {
-                // Si son idénticas tras normalizar básico
-                if (clave === nuevaNorm) return clave;
-
-                // Si tienen un 80% o más de similitud exacta por letras, las unifica
-                // Esto absorbe errores como "Zkitlez star" vs "Zkittlez star"
-                // Pero descarta "Zkittlez star" vs "Zkittlez mellow" porque su similitud es muy baja (~50%)
-                if (calcularSimilitud(nuevaNorm, clave) >= 0.80) {
-                    return clave;
-                }
-            }
-            return null; // Si no se parece a nada, es una variedad nueva
         }
 
         async function updateRanking() {
@@ -207,7 +185,10 @@
                     document.getElementById('last-fecha').innerText = fechaHora;
                 }
 
+                // --- SISTEMA CORREGIDO DE UNIFICACIÓN ---
                 const stats = {};
+                // Mapeo dinámico para recordar qué variantes equivalen a la variedad original oficial
+                const mapaDeVariedades = {}; 
 
                 for (let i = 1; i < rawRows.length; i++) {
                     if (!rawRows[i].trim()) continue;
@@ -222,23 +203,35 @@
                     let nota = parseFloat(notaRaw?.replace(',', '.'));
 
                     if (variedadOriginal && !isNaN(nota)) {
-                        let listaClavesActuales = Object.keys(stats);
-                        let claveDestino = buscarClaveExistente(variedadOriginal, listaClavesActuales);
+                        let varianteNormalizada = normalizarTexto(variedadOriginal);
+                        let claveOficial = varianteNormalizada; 
 
-                        // Si no hay una clave parecida previa, creamos una nueva con el formato original de esta primera inscripción
-                        if (!claveDestino) {
-                            claveDestino = normalizarTexto(variedadOriginal);
-                            stats[claveDestino] = { 
-                                displayName: variedadOriginal, // Queda fija la primera forma en que se escribió
-                                total: 0, 
+                        // Comparamos contra el listado acumulado para ver si hay un error tipográfico previo
+                        let clavesExistentes = Object.keys(stats);
+                        let encontrado = false;
+
+                        for (let clave of clavesExistentes) {
+                            if (clave === varianteNormalizada || calcularSimilitud(varianteNormalizada, clave) >= 0.82) {
+                                claveOficial = clave;
+                                encontrado = true;
+                                break;
+                            }
+                        }
+
+                        // Si no se parece a nada previo, inicializamos la variedad oficial con este primer registro
+                        if (!encontrado) {
+                            stats[claveOficial] = {
+                                displayName: variedadOriginal, // Nombre estético definitivo tomado del primer registro
+                                total: 0,
                                 count: 0,
                                 notas: []
                             };
                         }
-                        
-                        stats[claveDestino].total += nota;
-                        stats[claveDestino].count += 1;
-                        stats[claveDestino].notas.push(nota);
+
+                        // Acumulamos los datos sobre la clave oficial unificada
+                        stats[claveOficial].total += nota;
+                        stats[claveOficial].count += 1;
+                        stats[claveOficial].notas.push(nota);
                     }
                 }
 
